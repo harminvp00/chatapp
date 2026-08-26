@@ -8,18 +8,21 @@ import { registerEmail } from "../../config/nodemailer/auth.email.js";
 export const registerUser = async (payload) => {
   const { username, email, password } = payload;
 
+  
+  
   const user = await prisma.$transaction(async (tx) => {
     const userExist = await findByEmail(email, tx);
-
+    
     if (userExist) {
       throw new UserNotFound();
     }
-
+    
     const password_hash = await bcrypt.hash(password, 10);
     const user = await createUser({ username, email, password_hash }, tx);
+    
     return user;
   });
-
+  
   if (!user) {
     return {
       success: false,
@@ -33,6 +36,7 @@ export const registerUser = async (payload) => {
     user.email,
     "New Acount is created on <b>InstantChat</b> using this email",
   );
+
 
   const { password_hash, ...safe_user } = user;
   return {

@@ -2,7 +2,7 @@
 import prisma from "../../config/prisma.js";
 
 export const findByEmail = async (email, db = prisma) => {
-  return db.users.findFirst({
+  return await db.users.findFirst({
     where: {
       email,
     },
@@ -15,7 +15,7 @@ export const findByEmail = async (email, db = prisma) => {
 };
 
 export const createUser = async (payload, db = prisma) => {
-  return db.users.create({
+  return await db.users.create({
     data: {
         ...payload
     }

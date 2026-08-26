@@ -5,7 +5,7 @@ import { UserNotFound } from "../../errors/auth.error.js";
 
 export const register = async (req, res) => {
   try {
-
+    console.log(req)
     // validation using ZOD
     const validation = registerValidation.safeParse(req.body);
 
@@ -29,14 +29,13 @@ export const register = async (req, res) => {
       res.status(201).json(response);
     }
 
-
   } catch (error) {
 
     // Error handler for "UserNotFound"
     if (error instanceof UserNotFound) {
       res.status(400).json({
         success: false,
-        messahe: error.message,
+        message: error.message,
       });
       return;
     }
