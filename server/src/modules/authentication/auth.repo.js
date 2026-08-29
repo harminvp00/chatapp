@@ -14,6 +14,16 @@ export const findByEmail = async (email, db = prisma) => {
   });
 };
 
+export const findByUsername = async (username, db = prisma) => {
+  return await db.users.findFirst({
+    where: {
+      username
+    }, select: {
+      username: true
+    }
+  })
+}
+
 export const createUser = async (payload, db = prisma) => {
   return await db.users.create({
     data: {

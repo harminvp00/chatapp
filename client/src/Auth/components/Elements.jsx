@@ -16,7 +16,7 @@ export const AuthButton = ({ btnTitle }) => {
 
 export const SingupProvider = ({icon, provider, onclick}) => {
   return (
-    <button type="button" onClick={onclick} className="flex items-center gap-3 p-3 rounded-2xl shadow-xl shadow-black/10  hover:cursor-pointer hover:opacity-50 hover:bg-gray-50 transition-color duration-[.25s]">
+    <button type="button" onClick={onclick} className="border flex items-center gap-3 p-3 rounded hover:cursor-pointer hover:opacity-50 hover:bg-gray-50 transition-color duration-[.25s]">
       <img className="w-8 h-8" src={icon} alt="" />
       <p>
         continue using <b>{provider}</b>

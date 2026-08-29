@@ -33,12 +33,17 @@ export const Register = () => {
   async function handleOnSubmit(event) {
     event.preventDefault();
 
-    const uri = `http://localhost:3000/auth/register`;
+    try{
+      const uri = `http://localhost:3000/auth/register`;
     const _response = await axios.post(uri, formData, {
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    if(!_response.data.success){
+      alert("there is an error");
+    }
 
     setResponse({
       success: _response?.data?.success,
@@ -51,6 +56,14 @@ export const Register = () => {
         message: "fill the above details correctly",
       });
     }, 7000);
+    }catch(err){
+      console.error(err);
+
+    setResponse({
+      success: false,
+      message: err.response?.data?.message || "Something went wrong",
+    });
+    }
   }
 
   return (

@@ -1,0 +1,24 @@
+
+import { verifyToken } from '../config/jwt/token.js';
+
+// AuthMiddleware: verify the JWT token existance and validness, and grant access to user for specific or group of services
+export default function AuthMiddleware(req, res, next) {
+  try {
+
+    // get a token
+    const { token } = req.cookies;
+    
+    // token existance 
+    if (!token) {
+      throw new UnauthorizedAccess();
+    }
+
+    // verification
+    const decode = verifyToken(token);
+
+    req.user = decode;
+    next();
+  } catch (error) {
+    next(error);
+  }
+}

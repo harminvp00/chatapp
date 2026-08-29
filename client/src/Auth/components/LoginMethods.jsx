@@ -1,6 +1,6 @@
 // components
 import { SingupProvider } from "../components/Elements.jsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 // icons
 import google from "/google.png";
 import github from "/github.png";
@@ -37,7 +37,7 @@ const AuthCard = () => {
         Continue With
       </h2>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col bg-black/5">
         {Object.entries(providers).map(([provider, icon], index) => (
           <SingupProvider
             key={provider}
@@ -46,6 +46,13 @@ const AuthCard = () => {
             onclick={onclicks[index]}
           />
         ))}
+      </div>
+
+      <div className="w-full px-1 pt-2 flex gap-1 text-lg">
+        already have an account?
+        <Link to="/" className="text-blue-500 font-bold">
+          login
+        </Link>
       </div>
     </div>
   );

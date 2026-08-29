@@ -1,8 +1,14 @@
 
+export class UserError extends Error {
+  constructor(message = "user is not exists") {
+    super(message);
+    this.name = "UserError";
+  }
+}
 
-export class UserNotFound extends Error{
-    constructor(message = "user is not exists"){
-        super(message);
-        this.name = "UserNotFound";
-    }
+export class UnauthorizedAccess extends Error {
+  constructor(message = "Unauthrozied access detected.") {
+    super(message);
+    this.name = "UnauthorizedAccess";
+  }
 }

@@ -12,10 +12,10 @@ I am currently studying into the GEC Palanpur in department of computer engineer
 - Tailwind CSS is framework of CSS
 
 **Backend:** 
-- NodeJS a JavaScript runtime environment
-- ExpressJS a server framework (to build APIs)
+- **NodeJS** a JavaScript runtime environment
+- **ExpressJS** a server framework (to build APIs)
 
-**database:**
-- MongoDB and (Mongoose **ODM** is used), 
-- **ODM** stand for Object Document Model
+**Database:**
+- I am used **PostgreSQL** as my primary database in this project because the data used in this project is relational, so its bettter to use a relational database management system
 
+- **PrismaORM** (v6) is used like a bridge between the Postgres and NodeJS, because JavaScript mostly like to deal within Objects and that what prisma do, it's convert the relation data to objects amd allow to do operation on them.

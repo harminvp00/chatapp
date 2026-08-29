@@ -4,7 +4,7 @@ import 'dotenv/config';
 import express from "express";
 import cors from 'cors';
 import multer from 'multer';
-
+import cookieParser from 'cookie-parser';
 
 // configurations 
 import startApp from './src/app.js';
@@ -21,7 +21,8 @@ const upload = multer();
 await startApp(app);
 
 // middleware (application level)
-app.use(cors())
+app.use(cors({}))
+app.use(cookieParser());
 app.use(express.json());
 app.use(upload.array());
 app.use(upload.single('avatar'));
@@ -49,9 +50,9 @@ app.use((err, req, res, next)=>{
 
 const shutdown = async () => {
     console.log("Shutting down server...");
-
+    
     await prisma.$disconnect();
-
+    
     server.close(() => {
         console.log("Server closed.");
         process.exit(0);
