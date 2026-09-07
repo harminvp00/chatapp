@@ -24,3 +24,12 @@ export const SingupProvider = ({icon, provider, onclick}) => {
     </button>
   );
 };
+
+export const Loader = () => {
+  return (
+     <div className="fixed h-screen w-screen flex items-center justify-center backdrop-blur-[5px]">
+        <div className="w-10 h-10 border-6 border-blue-500 rounded-full border-t-white animate-spin duration-[.26s]">
+        </div>
+      </div>
+  )
+}

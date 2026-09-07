@@ -25,6 +25,7 @@ export const findByUsername = async (username, db = prisma) => {
 }
 
 export const createUser = async (payload, db = prisma) => {
+  console.log(payload)
   return await db.users.create({
     data: {
         ...payload

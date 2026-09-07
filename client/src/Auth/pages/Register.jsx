@@ -1,12 +1,12 @@
-
-
-// UI elements
-import { AuthButton, Title } from "../components/Elements";
 import axios from "axios";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+// UI elements
+import { AuthButton, Loader, Title } from "../components/Elements";
 import close from "../../assets/close.svg";
 import quickchat from "/chat.png";
-import { Link, useNavigate } from "react-router-dom";
+
 // this is the register.jsx card
 export const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +18,10 @@ export const Register = () => {
   const [response, setResponse] = useState({
     success: true,
     message: "fill the above details correctly",
+    color: "black",
   });
+
+  const [showLoader, setShowLoader] = useState(false);
 
   const navigate = useNavigate();
 
@@ -33,42 +36,47 @@ export const Register = () => {
   async function handleOnSubmit(event) {
     event.preventDefault();
 
-    try{
-      const uri = `http://localhost:3000/auth/register`;
-    const _response = await axios.post(uri, formData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if(!_response.data.success){
-      alert("there is an error");
-    }
-
-    setResponse({
-      success: _response?.data?.success,
-      message: _response?.data?.message,
-    });
-
-    setTimeout(() => {
-      setResponse({
-        success: true,
-        message: "fill the above details correctly",
+    try {
+      setShowLoader(true);
+      const uri = `${import.meta.env.VITE_SERVER_URI}auth/register`;
+      const _response = await axios.post(uri, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-    }, 7000);
-    }catch(err){
-      console.error(err);
 
-    setResponse({
-      success: false,
-      message: err.response?.data?.message || "Something went wrong",
-    });
+      setShowLoader(false);
+
+      setResponse({
+        success: _response?.data?.success,
+        message: _response?.data?.message,
+        color: _response?.data?.color ? "green" : "red",
+      });
+
+      setTimeout(() => {
+        setResponse({
+          success: true,
+          message: "fill the above details correctly",
+          color: "black",
+        });
+      }, 4000);
+    } catch (err) {
+      setShowLoader(false);
+      setResponse({
+        success: false,
+        message: "Something went wrong",
+        color: "red",
+      });
+    } finally {
+      setShowLoader(false);
     }
   }
 
   return (
     // main container for register component
+
     <div className="h-screen w-screen flex items-center justify-center bg-black/20">
+      {showLoader ? <Loader /> : ""}
       {/* card inside register component  */}
       <div className="flex flex-col items-center mx-5 py-10 px-5 rounded-4xl bg-white shadow-2xl">
         {/* header with app logo */}
@@ -78,7 +86,7 @@ export const Register = () => {
         </div>
 
         {/* title component  */}
-        <div className="flex w-70 border-b-1 border-black  pb-2">
+        <div className="flex w-70 border-b border-black  pb-2">
           <Title title={"SignUp"} size={"text-2xl"} />
           <img
             type="button"
@@ -133,9 +141,7 @@ export const Register = () => {
             required
           />
 
-          <div
-            className={`pt-1 w-70 ${!response.success ? "text-red-500" : "text-black"}`}
-          >
+          <div className={`pt-1 w-70 text-${response.color}-500`}>
             {response.message}
           </div>
 
@@ -144,7 +150,9 @@ export const Register = () => {
         </form>
 
         <div className="text-start">
-          <Link to={'/'} className="text-blue-500 font-bold underline"> Login </Link>
+          <Link to={"/"} className="text-blue-500 font-bold underline">
+            Login
+          </Link>
           If You already have an account
         </div>
       </div>

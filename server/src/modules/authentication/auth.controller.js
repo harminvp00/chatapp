@@ -3,11 +3,10 @@ import { registerValidation } from "./auth.validation.js";
 import { UserError } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
-import getClientDetails from "../../utils/ua.parser.js";
 
 export const register = async (req, res) => {
   try {
-     // validation using ZOD
+    // validation using ZOD
     const validation = registerValidation.safeParse(req.body);
 
     // verify the validations
@@ -19,19 +18,16 @@ export const register = async (req, res) => {
       return;
     }
 
-    const userDetails = getClientDetails(req);
-
     // send paylaod to the service layer and geting ackowledgement as response
-    const response = await registerUser(validation.data, userDetails);
+    const response = await registerUser(validation.data);
 
-    if (!response.success) {
-      // send when user not created
-      res.status(500).json(response);
-    } else {
-      // send the response to the client that the user is created
-      res.status(201).json(response);
-    }
+    console.log(response)
+    // send the response to the client that the user is created
+    res.status(201).json(response);
+
   } catch (error) {
+
+    console.log(error)
     // Error handler for "UserError"
     if (error instanceof UserError) {
       res.status(400).json({
@@ -53,7 +49,7 @@ export const fetchUser = async (req, res) => {
   const { email } = req.user;
 
   const _user = await prisma.$transaction(async (tx) => {
-    return await findByEmail(email);
+    return await findByEmail(email, tx);
   });
 
   if (!_user) {

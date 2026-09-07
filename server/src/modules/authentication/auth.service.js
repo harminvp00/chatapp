@@ -4,30 +4,32 @@ import { createUser, findByEmail, findByUsername } from "./auth.repo.js";
 import { UserError } from "../../errors/auth.error.js";
 import { registerEmail } from "../../config/nodemailer/auth.email.js";
 
-// function to register the user in MONGO Database
-export const registerUser = async (payload, clinetDetails) => {
-  try {
-    const { username, email, password } = payload;
-    const { browser, os, device, network } = clinetDetails;
+// function to register the user in Postgres through prisma
+export const registerUser = async (payload) => {
+  const { username, email, password } = payload;
+  const hashed_password = await bcrypt.hash(password, 10);
 
-    console.log(browser, os, device, network);
+  try {
+    // database transsaction so on failure all operation will revert
     const user = await prisma.$transaction(async (tx) => {
       const userExist = await findByEmail(email, tx);
 
       if (userExist) {
-        throw new UserError();
+        throw new UserError("user is already exist");
       }
 
       const uniqueUsername = await findByUsername(username, tx);
 
       if (uniqueUsername) {
-        throw new UserError("Username is already taken");
+        throw new UserError(`The username ${username} is not available`);
       }
 
-      const password_hash = await bcrypt.hash(password, 10);
-      const user = await createUser({ username, email, password_hash }, tx);
+      const _user = await createUser(
+        { username, email, password_hash: hashed_password },
+        tx,
+      );
 
-      return user;
+      return _user;
     });
 
     if (!user) {
@@ -38,18 +40,15 @@ export const registerUser = async (payload, clinetDetails) => {
       };
     }
 
-    await registerEmail(
-      user.username,
-      user.email,
-      "New sign-in to your QuickChat account",
-      {
-       browser: browser.name,
-       os: os.name,
-       deviceVendor: device.vendor,
-       deviceModel: device.model,
-       network: network.ip
-      }
-    );
+    try {
+      await registerEmail(
+        user.username,
+        user.email,
+        "New sign-in to your QuickChat account"
+      );
+    } catch (error) {
+      console.log("failed to send an email to user", error);
+    }
 
     const { password_hash, ...safe_user } = user;
     return {

@@ -94,57 +94,6 @@ export async function registerEmail(username, email, subject, client) {
         </p>
       </div>
 
-      <!-- Sign-in Details -->
-      <div style="margin-bottom: 36px;">
-        <p
-          style="
-            margin: 0 0 14px 0;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #1f1f1f;
-          "
-        >
-          <strong style="font-weight: 600;">Device:</strong>
-          ${client.device}
-        </p>
-
-        <p
-          style="
-            margin: 0 0 14px 0;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #1f1f1f;
-          "
-        >
-          <strong style="font-weight: 600;">Time:</strong>
-          ${(new Date()).getDate().toLocaleString()}
-        </p>
-
-        <p
-          style="
-            margin: 0 0 14px 0;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #1f1f1f;
-          "
-        >
-          <strong style="font-weight: 600;">Network:</strong>
-          ${client.network}
-        </p>
-
-        <p
-          style="
-            margin: 0;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #1f1f1f;
-          "
-        >
-          <strong style="font-weight: 600;">Device:</strong>
-          ${client.browser} on ${client.os}
-        </p>
-      </div>
-
       <!-- Security Message -->
       <div style="margin-bottom: 40px;">
         <p
