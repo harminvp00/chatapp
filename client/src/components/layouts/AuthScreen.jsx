@@ -1,7 +1,7 @@
 
 // components 
-import CreateQR from "../components/CreateQR.jsx";
-import Header from "../components/Header.jsx";
+import CreateQR from "../auth/CreateQR.jsx";
+import Header from "../common/Header.jsx";
 // Main Auth Screen (first view of any user in this application)
 export const AuthScreen = () => {
   return (

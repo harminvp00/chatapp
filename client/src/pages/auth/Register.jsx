@@ -1,14 +1,24 @@
 import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import camera from "../../assets/app/camera.svg";
 // UI elements
-import { AuthButton, Loader, Title } from "../components/Elements";
-import close from "../../assets/close.svg";
+import {
+  AuthButton,
+  Loader,
+  Title,
+} from "../../components/common/Elements.jsx";
+import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
 
 // this is the register.jsx card
 export const Register = () => {
+  // to store the image
+  const [profileImage, setProfileImage] = useState(null);
+
+  // to preview the image
+  const [profilePreview, setProfilePreview] = useState(null);
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -16,9 +26,8 @@ export const Register = () => {
   });
 
   const [response, setResponse] = useState({
-    success: true,
-    message: "fill the above details correctly",
-    color: "black",
+    success: null,
+    message: "",
   });
 
   const [showLoader, setShowLoader] = useState(false);
@@ -26,11 +35,21 @@ export const Register = () => {
   const navigate = useNavigate();
 
   function handleOnChange(event) {
-    event.preventDefault();
     setFormData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
     }));
+  }
+
+  function handleImageUpload(event) {
+    const image = event.target.files[0];
+    if (image) {
+      setProfileImage(image);
+
+      const localURL = URL.createObjectURL(image);
+
+      setProfilePreview(localURL);
+    }
   }
 
   async function handleOnSubmit(event) {
@@ -45,27 +64,21 @@ export const Register = () => {
         },
       });
 
-      setShowLoader(false);
-
       setResponse({
         success: _response?.data?.success,
         message: _response?.data?.message,
-        color: _response?.data?.color ? "green" : "red",
       });
 
       setTimeout(() => {
         setResponse({
-          success: true,
-          message: "fill the above details correctly",
-          color: "black",
+          success: null,
+          message: "",
         });
-      }, 4000);
+      }, 10000);
     } catch (err) {
-      setShowLoader(false);
       setResponse({
         success: false,
-        message: "Something went wrong",
-        color: "red",
+        message: "something went wrong",
       });
     } finally {
       setShowLoader(false);
@@ -105,7 +118,25 @@ export const Register = () => {
           className="p-5 flex items-center justify-center flex-col"
         >
           {/* file upload input  */}
-          <input className="" type="file" name="avatar" hidden />
+          <label
+            htmlFor="profileImage"
+            className="flex items-center justify-center w-30 h-30 rounded-full bg-black/5 cursor-pointer hover:opacity-80"
+          >
+            <img
+              className="w-full h-full rounded-full"
+              src={profilePreview ? profilePreview : camera}
+              alt="profile_picture"
+              title="add profile picture"
+            />
+          </label>
+          <input
+            type="file"
+            id="profileImage"
+            onChange={(e) => handleImageUpload(e)}
+            name="profileImage"
+            accept=".png"
+            hidden
+          />
 
           {/* Username input field   */}
           <input
@@ -141,7 +172,9 @@ export const Register = () => {
             required
           />
 
-          <div className={`pt-1 w-70 text-${response.color}-500`}>
+          <div
+            className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
+          >
             {response.message}
           </div>
 

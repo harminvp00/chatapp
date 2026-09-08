@@ -1,11 +1,11 @@
 // components
-import { SingupProvider } from "../components/Elements.jsx";
+import { SingupProvider } from "../common/Elements.jsx";
 import { useNavigate, Link } from "react-router-dom";
 // icons
 import google from "/google.png";
 import github from "/github.png";
 import email from "/arroba.png";
-import Header from "./Header.jsx";
+import Header from "../common/Header.jsx";
 
 export const LoginMethods = () => {
   return (
