@@ -1,7 +1,11 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import camera from "../../assets/app/camera.svg";
+
+// SVG's
+import camera_svg from "../../assets/app/camera.svg";
+import edit_uploaded_image from "../../assets/crud/edit.svg";
+import remove_uploaded_image from "../../assets/crud/delete.svg";
 // UI elements
 import {
   AuthButton,
@@ -16,6 +20,7 @@ export const Register = () => {
   // to store the image
   const [profileImage, setProfileImage] = useState(null);
 
+  const Imagefile = useRef(null);
   // to preview the image
   const [profilePreview, setProfilePreview] = useState(null);
 
@@ -57,12 +62,19 @@ export const Register = () => {
 
     try {
       setShowLoader(true);
+      const data = new FormData();
+
+      data.append("username", formData.username);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+
+      if (profileImage) {
+        data.append("profileImage", profileImage);
+      }
+
       const uri = `${import.meta.env.VITE_SERVER_URI}auth/register`;
-      const _response = await axios.post(uri, formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+
+      const _response = await axios.post(uri, data);
 
       setResponse({
         success: _response?.data?.success,
@@ -117,26 +129,60 @@ export const Register = () => {
           onSubmit={(e) => handleOnSubmit(e)}
           className="p-5 flex items-center justify-center flex-col"
         >
-          {/* file upload input  */}
-          <label
-            htmlFor="profileImage"
-            className="flex items-center justify-center w-30 h-30 rounded-full bg-black/5 cursor-pointer hover:opacity-80"
-          >
-            <img
-              className="w-full h-full rounded-full"
-              src={profilePreview ? profilePreview : camera}
-              alt="profile_picture"
-              title="add profile picture"
-            />
-          </label>
+          {/* this is a hidden input element to get the file input from the user   */}
           <input
             type="file"
+            ref={Imagefile}
             id="profileImage"
             onChange={(e) => handleImageUpload(e)}
             name="profileImage"
-            accept=".png"
+            accept="image/*"
             hidden
           />
+
+          {/* file upload input  */}
+          <label
+            htmlFor={`${!profilePreview ? "profileImage" : ""}`}
+            className="relative flex items-center justify-center w-30 h-30 mb-3 rounded-full bg-black/5 cursor-pointer hover:opacity-80"
+          >
+            {/* img element to display the profile image of user  */}
+            <img
+              className={`${profilePreview ? "w-full h-full border-2 border-blue-500" : ""} rounded-full`}
+              src={profilePreview ? profilePreview : camera_svg}
+              alt="profile_picture"
+              title="add profile picture"
+            />
+
+            {/* Enables the edit when the profile button added */}
+            {profilePreview ? (
+              <>
+                {/* button for edit the current image in form  */}
+                <button
+                  type="button"
+                  onClick={() => Imagefile.current.click()}
+                  className="absolute z-10 top-20 right-0 bg-white rounded-full p-1 border hover:border-blue-500"
+                >
+                  <img src={edit_uploaded_image} alt="Edit" title="Edit" />
+                </button>
+
+                {/* button for remove current image in form */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileImage(null);
+                    setProfilePreview(null);
+                  }}
+                  className="absolute z-10 top-12 -right-3 bg-white rounded-full p-1 border hover:border-blue-500"
+                >
+                  <img
+                    src={remove_uploaded_image}
+                    alt="remove_profile_image"
+                    title="remove current profile picture"
+                  />
+                </button>
+              </>
+            ) : null}
+          </label>
 
           {/* Username input field   */}
           <input

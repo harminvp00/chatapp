@@ -15,7 +15,6 @@ import routes from './src/routes/index.js';
 
 // instances of plugins
 const app = express()
-const upload = multer();
 
 // application server
 await startApp(app);
@@ -24,8 +23,6 @@ await startApp(app);
 app.use(cors({}))
 app.use(cookieParser());
 app.use(express.json());
-app.use(upload.array());
-app.use(upload.single('avatar'));
 
 // status routes 
 app.get('/', (req, res)=> {

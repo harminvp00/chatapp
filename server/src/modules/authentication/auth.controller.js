@@ -3,13 +3,10 @@ import { registerValidation } from "./auth.validation.js";
 import { UserError } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
-
 export const register = async (req, res) => {
   try {
-    // validation using ZOD
     const validation = registerValidation.safeParse(req.body);
 
-    // verify the validations
     if (!validation.success) {
       res.status(400).json({
         success: false,
@@ -18,17 +15,11 @@ export const register = async (req, res) => {
       return;
     }
 
-    // send paylaod to the service layer and geting ackowledgement as response
-    const response = await registerUser(validation.data);
+    const response = await registerUser(validation.data, req.file);
 
-    console.log(response)
-    // send the response to the client that the user is created
+    
     res.status(201).json(response);
-
   } catch (error) {
-
-    console.log(error)
-    // Error handler for "UserError"
     if (error instanceof UserError) {
       res.status(400).json({
         success: false,
@@ -36,11 +27,19 @@ export const register = async (req, res) => {
       });
       return;
     }
+    
+    if (error instanceof UnauthorizedAccess) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
 
-    // function level Error handler
-    res.status(400).json({
+    console.log(error)
+    return res.status(500).json({
       success: false,
-      message: "Internal Server Error:" + error.message,
+      message: error.message,
     });
   }
 };
