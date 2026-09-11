@@ -72,7 +72,7 @@ export const Register = () => {
         data.append("profileImage", profileImage);
       }
 
-      const uri = `${import.meta.env.VITE_SERVER_URI}auth/register`;
+      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/register`;
 
       const _response = await axios.post(uri, data);
 

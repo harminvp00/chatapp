@@ -1,4 +1,6 @@
+
 import bcrypt from "bcrypt";
+import jwt from 'jsonwebtoken';
 import prisma from "../../config/prisma.js";
 import {
   createAvatar,
@@ -6,6 +8,7 @@ import {
   findByEmail,
   findByUsername,
 } from "./auth.repo.js";
+import 'dotenv/config';
 import { UserError } from "../../errors/auth.error.js";
 import { registerEmail } from "../../config/nodemailer/auth.email.js";
 
@@ -68,6 +71,10 @@ export const registerUser = async (formdata, filedata) => {
       };
     }
 
+    const token = jwt.sign({
+      username: user.username, email: user.email
+    }, process.env.JWT_SECRET_KEY);
+
     // send acknowledgement to user through email
     try {
       await registerEmail(
@@ -84,6 +91,7 @@ export const registerUser = async (formdata, filedata) => {
     return {
       success: true,
       message: "User is created successfully",
+      token,
       user: {
         ...safe_user,
         id: safe_user.id.toString(),

@@ -1,51 +1,50 @@
-
-import { createContext, useContext, useState } from "react";
-import { contextNotExist } from "../Errors/context.error.js"
-import axios from 'axios';
+import { createContext, useContext, useEffect, useState } from "react";
+import { contextNotExist } from "../Errors/context.error.js";
+import axios from "axios";
 
 // create a context
 const AuthContext = createContext(null);
 
-// create a provider 
-export default function AuthProvider({children}) {
+const api = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_URI,
+  withCredentials: true,
+});
 
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(false);
+// create a provider
+export default function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
 
-    const api = axios.create({
-        baseURL: import.meta.VITE_SERVER_URI,
-        withCredentials: true
-    })
+  async function fetchUser() {
+    try {
+      const response = await api.get("/auth/me");
 
-    async function getUser(){
-        const response = await axios.get('user/:me', {
-            Credential: true
-        })
+      setUser(response?.data?.user);
+    } catch (error) {
+      console.error(error);
+      setUser(null);
     }
 
-    // making call on /user/:me 
-    const login = async (credential) =>{
-        const user = await api.post('/user/:me', credential);
-        setUser(user.data);
-    }
+    console.log(user);
+  }
 
-    const logout = async () => {
-        await api.get('/user/logout');
-        setUser(null);
-    }
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
+  const logout = async () => {
+    await api.get("/user/logout");
+    setUser(null);
+  };
 
-    return (
-        <AuthContext.Provider value={{user, login, logout, loading}} >
-            {!loading && children}
-        </AuthContext.Provider>
-    )
+  return (
+    <AuthContext.Provider value={{ user, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-
 export function useAuth() {
-
-    const context = useContext(AuthContext);
-    if(!context) throw new contextNotExist();
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) throw new contextNotExist();
+  return context;
 }
