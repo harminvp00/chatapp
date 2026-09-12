@@ -1,4 +1,3 @@
-
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../../config/prisma.js";
@@ -9,8 +8,8 @@ import {
   findByUsername,
 } from "./auth.repo.js";
 import "dotenv/config";
-import { UserError } from "../../errors/auth.error.js";
-import { registerEmail } from "../../config/nodemailer/auth.email.js";
+import { PasswordError, UserError } from "../../errors/auth.error.js";
+import { registerEmail, loginEmail } from "../../config/nodemailer/auth.email.js";
 
 // function to register the user in Postgres through prisma
 export const registerUser = async (formdata, filedata) => {
@@ -19,8 +18,8 @@ export const registerUser = async (formdata, filedata) => {
   let file_name, file_destination;
   if (filedata) {
     const { filename, destination } = filedata;
-    file_name = filename
-    file_destination = destination
+    file_name = filename;
+    file_destination = destination;
   }
   const hashed_password = await bcrypt.hash(password, 10);
 
@@ -111,6 +110,79 @@ export const registerUser = async (formdata, filedata) => {
       success: false,
       message: error.name + ": " + error.message,
       user: null,
+    };
+  }
+};
+
+// Login User Service Start from Here
+export const loginUser = async (credentials) => {
+  try {
+    const { email, password } = credentials;
+
+    const user = await prisma.$transaction(async (tx) => {
+      const _user = await tx.users.findFirst({
+        where:{
+          email
+        },select:{
+          username: true,
+          email: true,
+          role: true,
+          password_hash: true
+        }
+      })
+
+      if (!_user) {
+        throw new UserError("no user exists with this mail");
+      }
+
+      const matchPassword = await bcrypt.compare(
+        password,
+        _user.password_hash,
+      );
+
+      if (!matchPassword) {
+        throw new PasswordError();
+      }
+
+      return _user;
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Login Unsuccessful",
+      };
+    }
+
+    const token = jwt.sign(
+      {
+        username: user.username,
+        email: user.email,
+      },
+      process.env.JWT_SECRET_KEY,
+    );
+
+    // send acknowledgement to user through email
+    try {
+      await loginEmail(
+        user.username,
+        user.email,
+        "New Login to your QuickChat account",
+      );
+    } catch (error) {
+      console.log("failed to send an email to user", error);
+    }
+
+    return {
+      success: true,
+      message: "Login successfull",
+      token,
+      user,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `${error.name}: ${error.message}`,
     };
   }
 };

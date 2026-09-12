@@ -12,3 +12,11 @@ export class UnauthorizedAccess extends Error {
     this.name = "UnauthorizedAccess";
   }
 }
+
+
+export class PasswordError extends Error {
+  constructor(message = "wrong credentials") {
+    super(message);
+    this.name = "PasswordError";
+  }
+}

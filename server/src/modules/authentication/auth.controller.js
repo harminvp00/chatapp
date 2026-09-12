@@ -1,6 +1,5 @@
-
-import { registerUser } from "./auth.service.js";
-import { registerValidation } from "./auth.validation.js";
+import { registerUser, loginUser } from "./auth.service.js";
+import { loginValidation, registerValidation } from "./auth.validation.js";
 import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
@@ -16,7 +15,7 @@ export const register = async (req, res) => {
       });
       return;
     }
-    
+
     const response = await registerUser(validation.data, req.file);
 
     if (!response.success) {
@@ -50,6 +49,35 @@ export const register = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+export const login = async (req, res) => {
+  try {
+    console.log(req.body)
+    const validate = loginValidation.safeParse(req.body);
+    if(!validate.success){
+      res.status(400).json({
+        success: true,
+        message: validate.error.issues[0].message
+      })
+      return;
+    }
+
+    const response = await loginUser(validate.data);
+
+    if(!response.success){
+      res.status(400).json({
+        success: false,
+        message: response.message
+      })
+    }
+
+    const { token, ...rest} = response;
+    res.cookie('token', token, {
+      httpOnly: true
+    })
+    return res.status(200).json(rest)
+  } catch (err) {}
 };
 
 export const fetchUser = async (req, res) => {
