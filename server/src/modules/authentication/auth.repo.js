@@ -35,8 +35,8 @@ export const createUser = async (payload, db = prisma) => {
 export const createAvatar = async (payload, db=prisma) => {
   return await db.avatars.create({
     data: {
-      image_path: `${payload.destination}/${payload.filename}`,
-      file_name: payload.filename
+      image_path: `${payload.file_destination}/${payload.file_name}`,
+      file_name: payload.file_name
     }
   })
 }

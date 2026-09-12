@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 // SVG's
 import camera_svg from "../../assets/app/camera.svg";
 import edit_uploaded_image from "../../assets/crud/edit.svg";
@@ -50,9 +49,7 @@ export const Register = () => {
     const image = event.target.files[0];
     if (image) {
       setProfileImage(image);
-
       const localURL = URL.createObjectURL(image);
-
       setProfilePreview(localURL);
     }
   }
@@ -73,27 +70,34 @@ export const Register = () => {
       }
 
       const uri = `${import.meta.env.VITE_SERVER_URI}/auth/register`;
-
-      const _response = await axios.post(uri, data);
+      const _response = await axios.post(uri, data, {
+        withCredentials: true,
+      });
 
       setResponse({
         success: _response?.data?.success,
         message: _response?.data?.message,
       });
 
-      setTimeout(() => {
+      setTimeout(()=>{
         setResponse({
           success: null,
           message: "",
         });
-      }, 10000);
+      }, 3000)
+
+
+      if (_response?.data?.success) {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       setResponse({
         success: false,
-        message: "something went wrong",
+        message: err.message,
       });
     } finally {
       setShowLoader(false);
+      
     }
   }
 
@@ -112,7 +116,7 @@ export const Register = () => {
 
         {/* title component  */}
         <div className="flex w-70 border-b border-black  pb-2">
-          <Title title={"SignUp"} size={"text-2xl"} />
+          <Title title={"SignIn"} size={"text-2xl"} />
           <img
             type="button"
             onClick={() => {
@@ -229,7 +233,7 @@ export const Register = () => {
         </form>
 
         <div className="text-start">
-          <Link to={"/"} className="text-blue-500 font-bold underline">
+          <Link to={"/login"} className="text-blue-500 font-bold underline">
             Login
           </Link>
           If You already have an account

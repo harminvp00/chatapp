@@ -1,3 +1,4 @@
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../../config/prisma.js";
@@ -12,10 +13,15 @@ import { UserError } from "../../errors/auth.error.js";
 import { registerEmail } from "../../config/nodemailer/auth.email.js";
 
 // function to register the user in Postgres through prisma
-export const registerUser = async (formdata, filedata = undefined) => {
+export const registerUser = async (formdata, filedata) => {
   // destructure input data
   const { username, email, password } = formdata;
-  const { filename, destination, ...rest } = filedata;
+  let file_name, file_destination;
+  if (filedata) {
+    const { filename, destination } = filedata;
+    file_name = filename
+    file_destination = destination
+  }
   const hashed_password = await bcrypt.hash(password, 10);
 
   try {
@@ -38,8 +44,8 @@ export const registerUser = async (formdata, filedata = undefined) => {
       if (filedata) {
         const avatar = await createAvatar(
           {
-            filename,
-            destination,
+            file_name,
+            file_destination,
           },
           tx,
         );

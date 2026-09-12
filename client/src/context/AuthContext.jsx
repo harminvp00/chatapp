@@ -1,50 +1,46 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { contextNotExist } from "../Errors/context.error.js";
 import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
+const AuthContext = createContext();
 
-// create a context
-const AuthContext = createContext(null);
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_URI,
-  withCredentials: true,
-});
-
-// create a provider
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-
-  async function fetchUser() {
-    try {
-      const response = await api.get("/auth/me");
-
-      setUser(response?.data?.user);
-    } catch (error) {
-      console.error(error);
-      setUser(null);
-    }
-
-    console.log(user);
-  }
+  const [loading, setloading] = useState(true);
 
   useEffect(() => {
-    fetchUser();
+    async function getCurrentUser() {
+      try {
+        const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
+        const response = await axios.get(uri, { withCredentials: true });
+        setUser(response.data.user);
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setloading(false);
+      }
+    }
+
+    getCurrentUser();
   }, []);
 
-  const logout = async () => {
-    await api.get("/user/logout");
-    setUser(null);
-  };
+  async function logout() {
+    try {
+      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/logout`;
+      await axios.get(uri, { withCredentials: true });
+      setUser(null);
+    } catch (e) {}
+  }
 
   return (
-    <AuthContext.Provider value={{ user, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new contextNotExist();
+  if (!context) {
+    console.log("context is not available");
+  }
   return context;
-}
+};
