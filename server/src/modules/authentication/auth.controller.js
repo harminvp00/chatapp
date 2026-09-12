@@ -3,6 +3,7 @@ import { registerValidation } from "./auth.validation.js";
 import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
+import { httpUrl } from "zod";
 
 export const register = async (req, res) => {
   try {
@@ -16,13 +17,25 @@ export const register = async (req, res) => {
       return;
     }
 
-    const response = await registerUser(validation.data, req.file);
+    let response;
 
-    const {token, ...rest} = response;
-    res.cookie('token', token);
-    console.log('cookie set');
-    res.status(201).json(rest);
+    if (req.file) {
+      const response_data = await registerUser(validation.data, req.file);
+      response = response_data;
+    } else {
+      const response_data = await registerUser(validation.data);
+      response = response_data;
+    }
 
+    if (!response.success) {
+      return res.status(400).json(response);
+    }
+
+    const { token, ...rest } = response;
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
+    return res.status(201).json(rest);
   } catch (error) {
     if (error instanceof UserError) {
       res.status(400).json({
@@ -40,7 +53,6 @@ export const register = async (req, res) => {
       return;
     }
 
-    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -50,6 +62,7 @@ export const register = async (req, res) => {
 
 export const fetchUser = async (req, res) => {
   try {
+    console.log(1010);
     const { email } = req.user;
 
     const _user = await prisma.$transaction(async (tx) => {
@@ -60,17 +73,16 @@ export const fetchUser = async (req, res) => {
       throw new UserError("User is not exist!");
     }
 
-    console.log(_user)
     res.status(200).json({
       success: true,
       message: "user fetched successfully",
       user: _user,
     });
   } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'server decline the request',
-        user: null
-      })
+    res.status(500).json({
+      success: false,
+      message: "server decline the request",
+      user: null,
+    });
   }
 };

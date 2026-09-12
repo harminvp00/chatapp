@@ -8,7 +8,6 @@ export default function AuthMiddleware(req, res, next) {
     // get a token
     const token  = req.cookies.token;
     
-    console.log(token)
     // token existance 
     if (!token) {
       throw new UnauthorizedAccess();

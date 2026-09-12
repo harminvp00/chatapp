@@ -1,6 +1,5 @@
-
 import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import prisma from "../../config/prisma.js";
 import {
   createAvatar,
@@ -8,14 +7,13 @@ import {
   findByEmail,
   findByUsername,
 } from "./auth.repo.js";
-import 'dotenv/config';
+import "dotenv/config";
 import { UserError } from "../../errors/auth.error.js";
 import { registerEmail } from "../../config/nodemailer/auth.email.js";
 
 // function to register the user in Postgres through prisma
-export const registerUser = async (formdata, filedata) => {
-
-  // destructure input data 
+export const registerUser = async (formdata, filedata = undefined) => {
+  // destructure input data
   const { username, email, password } = formdata;
   const { filename, destination, ...rest } = filedata;
   const hashed_password = await bcrypt.hash(password, 10);
@@ -36,22 +34,22 @@ export const registerUser = async (formdata, filedata) => {
       }
 
       // create a avatar
-      let avatar_id = null;
+      let avatarId = null;
       if (filedata) {
         const avatar = await createAvatar(
           {
             filename,
-            destination
+            destination,
           },
           tx,
         );
-        avatar_id = avatar.id;
+        avatarId = avatar.id;
       }
 
       // create user
       const _user = await createUser(
         {
-          avatar_id,
+          avatar_id: avatarId,
           username,
           email,
           password_hash: hashed_password,
@@ -71,9 +69,13 @@ export const registerUser = async (formdata, filedata) => {
       };
     }
 
-    const token = jwt.sign({
-      username: user.username, email: user.email
-    }, process.env.JWT_SECRET_KEY);
+    const token = jwt.sign(
+      {
+        username: user.username,
+        email: user.email,
+      },
+      process.env.JWT_SECRET_KEY,
+    );
 
     // send acknowledgement to user through email
     try {
@@ -87,7 +89,7 @@ export const registerUser = async (formdata, filedata) => {
     }
 
     const { password_hash, ...safe_user } = user;
-    
+
     return {
       success: true,
       message: "User is created successfully",
@@ -95,14 +97,13 @@ export const registerUser = async (formdata, filedata) => {
       user: {
         ...safe_user,
         id: safe_user.id.toString(),
-        avatar_id: safe_user.avatar_id.toString()
+        avatar_id: null,
       },
     };
-
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message: error.name + ": " + error.message,
       user: null,
     };
   }
