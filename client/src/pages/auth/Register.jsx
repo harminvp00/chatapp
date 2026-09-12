@@ -116,7 +116,7 @@ export const Register = () => {
 
         {/* title component  */}
         <div className="flex w-70 border-b border-black  pb-2">
-          <Title title={"SignIn"} size={"text-2xl"} />
+          <Title title={"SignUp"} size={"text-2xl"} />
           <img
             type="button"
             onClick={() => {
@@ -233,7 +233,7 @@ export const Register = () => {
         </form>
 
         <div className="text-start">
-          <Link to={"/login"} className="text-blue-500 font-bold underline">
+          <Link to={"/"} className="text-blue-500 font-bold underline">
             Login
           </Link>
           If You already have an account
