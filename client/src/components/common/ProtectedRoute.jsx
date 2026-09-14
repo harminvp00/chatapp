@@ -1,20 +1,13 @@
 
-import { useAuth } from "../../context/AuthContext";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-export const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+export const ProtectedRoute = ({ user }) => {
+  const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center">
-        <h1> Loading... </h1>
-      </div>
-    );
-  }
 
   if (!user) {
-    return <div> No User </div>;
+    return <Navigate to="/" replace state={{ from: location }} />;
   }
 
-  return children;
+  return <Outlet/>;
 };

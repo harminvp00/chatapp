@@ -79,17 +79,17 @@ export const Register = () => {
         message: _response?.data?.message,
       });
 
-      setTimeout(()=>{
+      setTimeout(() => {
         setResponse({
           success: null,
           message: "",
         });
-      }, 3000)
+      }, 3000);
 
+      if (_response?.data?.success) return;
 
-      if (_response?.data?.success) {
-        navigate("/", { replace: true });
-      }
+      setUser(_response.data.user)
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setResponse({
         success: false,
@@ -97,7 +97,6 @@ export const Register = () => {
       });
     } finally {
       setShowLoader(false);
-      
     }
   }
 

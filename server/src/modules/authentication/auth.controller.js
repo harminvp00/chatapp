@@ -3,6 +3,7 @@ import { loginValidation, registerValidation } from "./auth.validation.js";
 import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
+import { success } from "zod";
 
 export const register = async (req, res) => {
   try {
@@ -53,36 +54,36 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const validate = loginValidation.safeParse(req.body);
-    if(!validate.success){
+    if (!validate.success) {
       res.status(400).json({
         success: true,
-        message: validate.error.issues[0].message
-      })
+        message: validate.error.issues[0].message,
+      });
       return;
     }
 
     const response = await loginUser(validate.data);
 
-    if(!response.success){
+    console.log(response.message);
+    if (!response.success) {
       res.status(400).json({
         success: false,
-        message: response.message
-      })
+        message: response.message,
+      });
     }
 
-    const { token, ...rest} = response;
-    res.cookie('token', token, {
-      httpOnly: true
-    })
-    return res.status(200).json(rest)
+    const { token, ...rest } = response;
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
+    return res.status(200).json(rest);
   } catch (err) {}
 };
 
 export const fetchUser = async (req, res) => {
   try {
-    console.log(1010);
     const { email } = req.user;
 
     const _user = await prisma.$transaction(async (tx) => {
@@ -99,7 +100,15 @@ export const fetchUser = async (req, res) => {
       user: _user,
     });
   } catch (error) {
-    res.status(500).json({
+    if (error instanceof UserError) {
+      res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+
+    return res.status(500).json({
       success: false,
       message: "server decline the request",
       user: null,

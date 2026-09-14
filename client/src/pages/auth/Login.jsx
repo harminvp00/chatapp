@@ -9,10 +9,12 @@ import {
 } from "../../components/common/Elements.jsx";
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
 
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -52,25 +54,19 @@ export const Login = () => {
         message: _response?.data?.message,
       });
 
-      setTimeout(()=>{
-        setResponse({
-          success: null,
-          message: "",
-        });
-      }, 3000)
-
-
-      if (_response?.data?.success) {
-        navigate("/", { replace: true });
-      }
-    } catch (err) {
+      if (!_response?.data?.success) return;
+      
+      setUser(_response.data.user)
+      navigate("/dashboard", { replace: true });
+    } 
+    catch (err) {
       setResponse({
         success: false,
-        message: err.message,
+        message: err.message || 'something wents wrong',
       });
     } finally {
       setShowLoader(false);
-      
+      navigate("/dashboard", { replace: true });
     }
   }
 
@@ -139,11 +135,11 @@ export const Login = () => {
           <AuthButton btnTitle={"Login"} />
         </form>
 
-        <div className="text-start">
-          <Link to={"/login"} className="text-blue-500 font-bold underline">
-            Login
+        <div className="text-start flex gap-1">
+          I dont have any account, 
+          <Link to={"/register"} className="text-blue-500 font-bold underline">
+            create one
           </Link>
-          If You already have an account
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import upload from '../../config/multer/multer.js';
 const router = Router();
 
 router.post("/register", upload.single("profileImage"), register);
-router.post("/login", login)
+router.post("/login", login);
 router.get("/logout", logout);
 router.get("/me", AuthMiddleware, fetchUser);
 

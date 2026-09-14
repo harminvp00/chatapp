@@ -14,6 +14,7 @@ export default function AuthProvider({ children }) {
         setUser(response.data.user);
       } catch (err) {
         setUser(null);
+        console.log(err);
       } finally {
         setloading(false);
       }
@@ -31,7 +32,7 @@ export default function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

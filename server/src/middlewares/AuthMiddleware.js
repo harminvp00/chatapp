@@ -10,7 +10,11 @@ export default function AuthMiddleware(req, res, next) {
     
     // token existance 
     if (!token) {
-      throw new UnauthorizedAccess();
+      res.status(401).json({
+        success: false,
+        message: 'wrong credentials for login'       
+      });
+      return;
     }
 
     // verification

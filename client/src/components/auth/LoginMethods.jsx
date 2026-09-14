@@ -26,8 +26,8 @@ const AuthCard = () => {
   const navigate = useNavigate();
 
   const onclicks = [
-    () => alert("hello, are you want to login?"),
-    () => alert("hello, are you want to login?"),
+    () => alert("hello, are you want to gogole login?"),
+    () => alert("hello, are you want to github login?"),
     () => navigate("/register"),
   ];
 
