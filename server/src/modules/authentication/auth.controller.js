@@ -54,7 +54,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(req.body);
     const validate = loginValidation.safeParse(req.body);
     if (!validate.success) {
       res.status(400).json({
@@ -64,22 +63,90 @@ export const login = async (req, res) => {
       return;
     }
 
-    const response = await loginUser(validate.data);
+    const rawUA = req.get("User-Agent");
+    console.log(rawUA);
 
-    console.log(response.message);
+    const response = await loginUser(validate.data, rawUA, req.ip);
+
     if (!response.success) {
       res.status(400).json({
         success: false,
         message: response.message,
       });
+      return;
     }
 
-    const { token, ...rest } = response;
-    res.cookie("token", token, {
+    const { accessToken, refreshToken, ...rest } = response;
+
+    res.cookie("access_token", accessToken, {
       httpOnly: true,
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return res.status(200).json(rest);
-  } catch (err) {}
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const refresh = async (req, res) => {
+  const refreshToken = req.user;
+
+  const refreshTokenHash = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+
+  const accessToken = await prisma.$transaction(async (tx) => {
+    const session = await tx.sessions.findUnique({
+      where: {
+        refresh_token_hash: refreshTokenHash,
+      },
+    });
+    if (!session) {
+      throw new Error("Invalid refresh token");
+    }
+
+    if (session.revoked_at) {
+      throw new Error("session is revoked");
+    }
+
+    if (session.expires_at < new Date()) {
+      throw new Error("session is expired");
+    }
+
+    const accessToken = jwt.sign(
+      {
+        uid: session.user_id,
+        sid: session.id,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "15m",
+      },
+    );
+
+    tx.sessions.update({
+      where: { id: session.id },
+      data: { last_used: new Date() },
+    });
+
+    return accessToken;
+  });
+
+  res.cookie("access_token", accessToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+  });
 };
 
 export const fetchUser = async (req, res) => {
@@ -117,9 +184,22 @@ export const fetchUser = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  res.cookie("token", null);
-  return res.status(200).json({
-    success: true,
-    message: "user logout successfully",
+  const refreshToken = req.cookies.refresh_token;
+
+  const refreshTokenHash = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+
+  await prisma.sessions.update({
+    where: {
+      refresh_token_hash: refreshTokenHash,
+    },
+    data: {
+      revoked_at: new Date(),
+    },
   });
+
+  res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
 };

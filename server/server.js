@@ -31,6 +31,8 @@ app.use(express.json());
 
 // status routes
 app.get("/", (req, res) => {
+  const rawUA = req.get('user-agent');
+  console.log(rawUA, req.ip)
   res.send("server is running");
 });
 

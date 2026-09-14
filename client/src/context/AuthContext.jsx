@@ -23,16 +23,35 @@ export default function AuthProvider({ children }) {
     getCurrentUser();
   }, []);
 
-  async function logout() {
+  const login = async (formData) => {
+    const uri = `${import.meta.env.VITE_SERVER_URI}/auth/login`;
+
+    const response = await axios.post(
+      uri,
+      formData,
+      {
+        withCredentials: true,
+      },
+      {
+        "Content-Type": "application/json",
+      },
+    );
+
+    setUser(response.data.user);
+
+    return response.data.user;
+  };
+
+  const logout = async () => {
     try {
       const uri = `${import.meta.env.VITE_SERVER_URI}/auth/logout`;
       await axios.get(uri, { withCredentials: true });
       setUser(null);
     } catch (e) {}
-  }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -40,8 +59,10 @@ export default function AuthProvider({ children }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
-    console.log("context is not available");
+    throw new Error("useAuth must be used inside AuthProvider");
   }
+
   return context;
 };

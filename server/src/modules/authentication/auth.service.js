@@ -9,7 +9,10 @@ import {
 } from "./auth.repo.js";
 import "dotenv/config";
 import { PasswordError, UserError } from "../../errors/auth.error.js";
-import { registerEmail, loginEmail } from "../../config/nodemailer/auth.email.js";
+import {
+  registerEmail,
+  loginEmail,
+} from "../../config/nodemailer/auth.email.js";
 
 // function to register the user in Postgres through prisma
 export const registerUser = async (formdata, filedata) => {
@@ -24,7 +27,7 @@ export const registerUser = async (formdata, filedata) => {
   const hashed_password = await bcrypt.hash(password, 10);
 
   try {
-    // database transsaction so on failure all operation will revert
+    // database transsaction so on failure all operation will revert (rollback)
     const user = await prisma.$transaction(async (tx) => {
       const userExist = await findByEmail(email, tx);
 
@@ -115,58 +118,81 @@ export const registerUser = async (formdata, filedata) => {
 };
 
 // Login User Service Start from Here
-export const loginUser = async (credentials) => {
+export const loginUser = async (credentials, user_agent, ip_addr) => {
   try {
     const { email, password } = credentials;
 
-    const user = await prisma.$transaction(async (tx) => {
+    const db_response = await prisma.$transaction(async (tx) => {
       const _user = await tx.users.findFirst({
-        where:{
-          email
-        },select:{
+        where: {
+          email,
+        },
+        select: {
+          id: true,
           username: true,
           email: true,
           role: true,
-          password_hash: true
-        }
-      })
+          password_hash: true,
+        },
+      });
 
       if (!_user) {
         throw new UserError("no user exists with this mail");
       }
 
-      const matchPassword = await bcrypt.compare(
-        password,
-        _user.password_hash,
-      );
+      const matchPassword = await bcrypt.compare(password, _user.password_hash);
 
       if (!matchPassword) {
         throw new PasswordError();
       }
 
-      return _user;
+      const refreshToken = crypto.randomBytes(64).toString("hex");
+
+      const refreshTokenHash = crypto
+        .createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
+
+      const session = await tx.sessions.create({
+        data: {
+          user_id: _user.id,
+          refresh_token_hash: refreshTokenHash,
+          user_agent: user_agent,
+          ip_address: ip_addr,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      return {
+        _user,
+        session,
+        refreshToken,
+      };
     });
 
-    if (!user) {
+    if (!db_response._user) {
       return {
         success: false,
         message: "Login Unsuccessful",
       };
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
-        username: user.username,
-        email: user.email,
+        uid: db_response._user.id,
+        sid: db_response.session.id,
       },
       process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "15m",
+      },
     );
 
     // send acknowledgement to user through email
     try {
       await loginEmail(
-        user.username,
-        user.email,
+        db_response._user.username,
+        db_response._user.email,
         "New Login to your QuickChat account",
       );
     } catch (error) {
@@ -176,8 +202,9 @@ export const loginUser = async (credentials) => {
     return {
       success: true,
       message: "Login successfull",
-      token,
-      user,
+      user: db_response._user,
+      accessToken,
+      refreshToken: db_response.refreshToken,
     };
   } catch (error) {
     return {
