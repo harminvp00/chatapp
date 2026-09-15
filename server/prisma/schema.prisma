@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model avatars {
+  id         BigInt   @id @default(autoincrement())
+  file_name  String   @unique @db.VarChar(255)
+  image_path String   @unique @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users[]
+}
+
+model conversation_members {
+  id              BigInt        @id @default(autoincrement())
+  conversation_id BigInt
+  user_id         BigInt
+  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_conversation_id")
+  users           users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_conversion_member")
+
+  @@unique([conversation_id, user_id], map: "unique_conversion_members")
+}
+
+model conversations {
+  id                   BigInt                 @id @default(autoincrement())
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?              @db.Timestamptz(6)
+  conversation_members conversation_members[]
+  messages             messages[]
+}
+
+model messages {
+  id              BigInt         @id @default(autoincrement())
+  conversation_id BigInt
+  sender_id       BigInt
+  ciphertext      String
+  message_type    message_types? @default(TEXT)
+  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?      @db.Timestamptz(6)
+  deleted_at      DateTime?      @db.Timestamptz(6)
+  conversations   conversations  @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_message_conversation")
+  users           users          @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_message_sender")
+}
+
+model oauth_accounts {
+  id          BigInt         @id @default(autoincrement())
+  user_id     BigInt
+  provider_id String         @db.VarChar(255)
+  provider    auth_providers
+  created_at  DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?      @db.Timestamptz(6)
+  users       users          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_oauth_acc")
+
+  @@unique([provider, provider_id], map: "unique_oauth_provider")
+}
+
+model sessions {
+  id                 BigInt    @id @default(autoincrement())
+  user_id            BigInt
+  refresh_token_hash String    @unique(map: "uq_sessions_refresh_token_hash") @db.VarChar(255)
+  user_agent         String    @db.VarChar(255)
+  ip_address         String    @db.Inet
+  expires_at         DateTime  @db.Timestamptz(6)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  revoked_at         DateTime? @db.Timestamptz(6)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_session")
+
+  @@index([user_id], map: "idx_sessions_user_id")
+}
+
+model user_keys {
+  id            BigInt    @id @default(autoincrement())
+  user_id       BigInt    @unique
+  public_key    String
+  key_algorithm String    @db.VarChar(100)
+  key_version   Int
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @db.Timestamptz(6)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_keys")
+}
+
+model users {
+  id                   BigInt                 @id @default(autoincrement())
+  avatar_id            BigInt?
+  username             String                 @unique @db.VarChar(255)
+  email                String                 @unique @db.VarChar(255)
+  password_hash        String?                @db.VarChar(255)
+  role                 user_roles             @default(USER)
+  conversation_members conversation_members[]
+  messages             messages[]
+  oauth_accounts       oauth_accounts[]
+  sessions             sessions[]
+  user_keys            user_keys?
+  avatars              avatars?               @relation(fields: [avatar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_avatar")
+}
+
+enum auth_providers {
+  EMAIL
+  GOOGLE
+  GITHUB
+}
+
+enum message_types {
+  TEXT
+  IMAGE
+  VIDEO
+  FILE
+}
+
+enum user_roles {
+  USER
+  ADMIN
+}

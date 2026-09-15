@@ -1,26 +1,65 @@
-
-import 'dotenv/config';
+// plugins
+import "dotenv/config";
 import express from "express";
-import startApp from './src/app.js';
-import connectDatabase from './src/config/database.connect.js';
-import { DBNotConnect } from './src/errors/database.error.js';
-const app = express()
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-await startApp(app);
-const database_response = await connectDatabase();
+// configurations
+import startApp from "./src/app.js";
+import prisma from "./src/config/prisma.js";
 
-if(!database_response.success){
-    throw new DBNotConnect();
-}
+// server routes
+import routes from "./src/routes/index.js";
 
-app.get('/', (req, res)=> {
-    res.send('server is running')
+// instances of plugins
+const app = express();
+
+// application server
+startApp(app);
+
+// middleware (application level)
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+
+  }),
+);
+app.use(cookieParser());
+app.use(express.json());
+
+// status routes
+app.get("/", (req, res) => {
+  const rawUA = req.get('user-agent');
+  res.send("server is running");
 });
 
-// Global Error Handler 
-app.use((err, req, res, next)=>{
-    res.status(500).json({
-        success: false,
-        message: err.message
-    });
+// service routes
+app.use(routes);
+
+app.use((req, res) => {
+  res.status(404).send("the requested route does not exist");
 });
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    success: false,
+    message: `${err.name} -> ${err.message}`,
+  });
+});
+
+const shutdown = async () => {
+  console.log("Shutting down server...");
+
+  await prisma.$disconnect();
+
+  server.close(() => {
+    console.log("Server closed.");
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
