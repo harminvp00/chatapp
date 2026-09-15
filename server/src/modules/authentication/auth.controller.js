@@ -3,6 +3,7 @@ import { loginValidation, registerValidation } from "./auth.validation.js";
 import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
 import prisma from "../../config/prisma.js";
 import { findByEmail } from "./auth.repo.js";
+import crypto from "node:crypto";
 import { success } from "zod";
 
 export const register = async (req, res) => {
@@ -17,15 +18,28 @@ export const register = async (req, res) => {
       return;
     }
 
-    const response = await registerUser(validation.data, req.file);
+    const rawUA = req.get("User-Agent");
+    const response = await registerUser(
+      validation.data,
+      req.file,
+      rawUA,
+      req.ip,
+    );
 
     if (!response.success) {
       return res.status(400).json(response);
     }
 
-    const { token, ...rest } = response;
-    res.cookie("token", token, {
+    const { accessToken, refreshToken, ...rest } = response;
+    res.cookie("access_token", accessToken, {
       httpOnly: true,
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return res.status(201).json(rest);
   } catch (error) {
@@ -64,7 +78,6 @@ export const login = async (req, res) => {
     }
 
     const rawUA = req.get("User-Agent");
-    console.log(rawUA);
 
     const response = await loginUser(validate.data, rawUA, req.ip);
 
@@ -134,7 +147,7 @@ export const refresh = async (req, res) => {
       },
     );
 
-    tx.sessions.update({
+    await tx.sessions.update({
       where: { id: session.id },
       data: { last_used: new Date() },
     });
@@ -184,22 +197,49 @@ export const fetchUser = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  const refreshToken = req.cookies.refresh_token;
+  try {
+    const refreshToken = req.cookies.refresh_token;
 
-  const refreshTokenHash = crypto
-    .createHash("sha256")
-    .update(refreshToken)
-    .digest("hex");
+    if (!refreshToken) {
+      res.status(401).json({
+        status: false,
+        message: "Refresh token not found",
+      });
+      return;
+    }
 
-  await prisma.sessions.update({
-    where: {
-      refresh_token_hash: refreshTokenHash,
-    },
-    data: {
-      revoked_at: new Date(),
-    },
-  });
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
 
-  res.clearCookie("access_token");
-  res.clearCookie("refresh_token");
+    await prisma.sessions.update({
+      where: {
+        refresh_token_hash: refreshTokenHash,
+      },
+      data: {
+        revoked_at: new Date(),
+      },
+    });
+
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "logout successfully",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: false,
+      message: err.message,
+    });
+  }
 };

@@ -2,7 +2,7 @@ import { success } from "zod";
 
 const RefreshMidldeware = (req, res, next) => {
   try {
-    const refreshToken = req.cookie.refresh_token;
+    const refreshToken = req.cookies.refresh_token;
 
     if (!refreshToken) {
       res.status(404).json({

@@ -8,6 +8,7 @@ import {
   findByUsername,
 } from "./auth.repo.js";
 import "dotenv/config";
+import crypto from "node:crypto";
 import { PasswordError, UserError } from "../../errors/auth.error.js";
 import {
   registerEmail,
@@ -15,7 +16,7 @@ import {
 } from "../../config/nodemailer/auth.email.js";
 
 // function to register the user in Postgres through prisma
-export const registerUser = async (formdata, filedata) => {
+export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
   // destructure input data
   const { username, email, password } = formdata;
   let file_name, file_destination;
@@ -55,7 +56,7 @@ export const registerUser = async (formdata, filedata) => {
       }
 
       // create user
-      const _user = await createUser(
+      const user_data = await createUser(
         {
           avatar_id: avatarId,
           username,
@@ -65,11 +66,32 @@ export const registerUser = async (formdata, filedata) => {
         tx,
       );
 
-      return _user;
+      const random = crypto.randomBytes(64);
+      const refreshToken = random.toString("hex");
+      const refreshTokenHash = crypto
+        .createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
+
+      const session = await tx.sessions.create({
+        data: {
+          user_id: user_data.id,
+          refresh_token_hash: refreshTokenHash,
+          user_agent: user_agent,
+          ip_address: ip_addr,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      return {
+        user_data,
+        session,
+        refreshToken,
+      };
     });
 
     // check that is user created
-    if (!user) {
+    if (!user.user_data) {
       return {
         success: false,
         message: "User is not created",
@@ -77,10 +99,10 @@ export const registerUser = async (formdata, filedata) => {
       };
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
-        username: user.username,
-        email: user.email,
+        uid: user.user_data.id.toString(),
+        sid: user.session.id.toString(),
       },
       process.env.JWT_SECRET_KEY,
     );
@@ -96,16 +118,16 @@ export const registerUser = async (formdata, filedata) => {
       console.log("failed to send an email to user", error);
     }
 
-    const { password_hash, ...safe_user } = user;
+    const { id, avatar_id, password_hash, ...safe_user } = user.user_data;
 
     return {
       success: true,
       message: "User is created successfully",
-      token,
+      accessToken,
+      refreshToken: user.refreshToken,
       user: {
         ...safe_user,
-        id: safe_user.id.toString(),
-        avatar_id: null,
+        avatar_id: avatar_id ? avatar_id.toString() : null,
       },
     };
   } catch (error) {
@@ -146,8 +168,8 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
         throw new PasswordError();
       }
 
-      const refreshToken = crypto.randomBytes(64).toString("hex");
-
+      const random = crypto.randomBytes(64);
+      const refreshToken = random.toString("hex");
       const refreshTokenHash = crypto
         .createHash("sha256")
         .update(refreshToken)
@@ -179,14 +201,16 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
 
     const accessToken = jwt.sign(
       {
-        uid: db_response._user.id,
-        sid: db_response.session.id,
+        uid: db_response._user.id.toString(),
+        sid: db_response.session.id.toString(),
       },
       process.env.JWT_SECRET_KEY,
       {
         expiresIn: "15m",
       },
     );
+
+    console.log('hello')
 
     // send acknowledgement to user through email
     try {
@@ -199,10 +223,12 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
       console.log("failed to send an email to user", error);
     }
 
+    const { id, ...safe_user } = db_response._user;
+
     return {
       success: true,
       message: "Login successfull",
-      user: db_response._user,
+      user: safe_user,
       accessToken,
       refreshToken: db_response.refreshToken,
     };

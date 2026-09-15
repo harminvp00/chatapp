@@ -41,11 +41,11 @@ api.interceptors.response.use(
       });
     }
 
-    originalRequest.retry = true;
+    originalRequest._retry = true;
     isRefreshing = true;
 
     try {
-      await api.post("http:localhost:3000/auth/refresh");
+      await api.post("/auth/refresh");
       processQueue(null);
       return api(originalRequest);
     } catch (refreshError) {

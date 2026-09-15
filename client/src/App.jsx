@@ -13,7 +13,7 @@ function App() {
   const { user, loading } = useAuth();
 
   if(loading){
-    return <Loader/>
+    return <Loader message={"Fetching user data from server"} />
   }
 
   return (
