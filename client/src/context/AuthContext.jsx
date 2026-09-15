@@ -11,11 +11,9 @@ export default function AuthProvider({ children }) {
       try {
         const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
         const response = await axios.get(uri, { withCredentials: true });
-        console.log(response.data)
         setUser(response.data.user);
       } catch (err) {
         setUser(null);
-        console.log(err);
       } finally {
         setloading(false);
       }

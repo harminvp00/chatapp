@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 export const Dashboard = () => {
   
   const {user, loading, logout} = useAuth();
-  console.log(JSON.stringify(user))
   return (
     <div className="h-screen flex flex-col justify-center items-center">
     

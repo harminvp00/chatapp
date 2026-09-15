@@ -210,7 +210,6 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
       },
     );
 
-    console.log('hello')
 
     // send acknowledgement to user through email
     try {

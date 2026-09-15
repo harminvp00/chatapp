@@ -49,7 +49,6 @@ export const Login = () => {
         'Content-Type': 'application/json'
       });
 
-      console.log(response)
       setResponse({
         success: _response?.data?.success,
         message: _response?.data?.message,
