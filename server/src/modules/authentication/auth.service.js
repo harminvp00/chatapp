@@ -110,8 +110,8 @@ export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
     // send acknowledgement to user through email
     try {
       await registerEmail(
-        user.username,
-        user.email,
+        user.user_data.username,
+        user.user_data.email,
         "New sign-in to your QuickChat account",
       );
     } catch (error) {
@@ -222,7 +222,7 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
       console.log("failed to send an email to user", error);
     }
 
-    const { id, ...safe_user } = db_response._user;
+    const { id, password_hash, ...safe_user } = db_response._user;
 
     return {
       success: true,

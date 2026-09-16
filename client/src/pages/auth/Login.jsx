@@ -13,8 +13,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
-
-  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -45,8 +43,9 @@ export const Login = () => {
       const uri = `${import.meta.env.VITE_SERVER_URI}/auth/login`;
       const _response = await axios.post(uri, formData, {
         withCredentials: true,
-      }, {
-        'Content-Type': 'application/json'
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       setResponse({
@@ -55,14 +54,12 @@ export const Login = () => {
       });
 
       if (!_response?.data?.success) return;
-      
-      setUser(_response.data.user)
+
       navigate("/dashboard", { replace: true });
-    } 
-    catch (err) {
+    } catch (err) {
       setResponse({
         success: false,
-        message: err.message || 'something wents wrong',
+        message: err.message || "something wents wrong",
       });
     } finally {
       setShowLoader(false);
@@ -101,7 +98,6 @@ export const Login = () => {
           onSubmit={(e) => handleOnSubmit(e)}
           className="p-5 flex items-center justify-center flex-col"
         >
-
           {/* Email address input field  */}
           <input
             className="bg-black/5 w-[90%] my-1 mx-10 p-4 border-0 outline-0 rounded-xl"
@@ -124,6 +120,7 @@ export const Login = () => {
             required
           />
 
+          {/* Showing the server response into form before the submit button */}
           <div
             className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
           >
@@ -134,8 +131,9 @@ export const Login = () => {
           <AuthButton btnTitle={"Login"} />
         </form>
 
+        {/* this is botttom message link for those who may do not have any account created yet! */}
         <div className="text-start flex gap-1">
-          I dont have any account, 
+          I dont have any account,
           <Link to={"/register"} className="text-blue-500 font-bold underline">
             create one
           </Link>
