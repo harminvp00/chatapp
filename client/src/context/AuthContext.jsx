@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext();
+import api from '../api/api.js';
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -10,7 +11,8 @@ export default function AuthProvider({ children }) {
     async function getCurrentUser() {
       try {
         const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
-        const response = await axios.get(uri, { withCredentials: true });
+        const response = await api.get(uri, { withCredentials: true });
+        console.log(response.data.user)
         setUser(response.data.user);
       } catch (err) {
         setUser(null);
@@ -25,16 +27,12 @@ export default function AuthProvider({ children }) {
   const login = async (formData) => {
     const uri = `${import.meta.env.VITE_SERVER_URI}/auth/login`;
 
-    const response = await axios.post(
-      uri,
-      formData,
-      {
-        withCredentials: true,
-      },
-      {
+    const response = await api.post(uri, formData, {
+      withCredentials: true,
+      headers: {
         "Content-Type": "application/json",
       },
-    );
+    });
 
     setUser(response.data.user);
 
@@ -44,7 +42,7 @@ export default function AuthProvider({ children }) {
   const logout = async () => {
     try {
       const uri = `${import.meta.env.VITE_SERVER_URI}/auth/logout`;
-      await axios.get(uri, { withCredentials: true });
+      await api.get(uri, { withCredentials: true });
       setUser(null);
     } catch (e) {
       console.error(e.message)

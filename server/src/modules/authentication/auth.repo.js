@@ -23,7 +23,42 @@ export const findByUsername = async (username, db = prisma) => {
     }
   })
 }
- 
+
+export const findAvatarByEmail = async (email, db=prisma) => {
+  return await db.avatars.findFirst({
+    where:{
+      email
+    }, select:{
+      image_path: true
+    }
+  })
+}
+
+export const findById = async (id, db = prisma) => {
+  return await db.users.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      username: true,
+      email: true,
+      role: true,
+      avatar_id: true,
+    },
+  });
+};
+
+export const findAvatarById = async (id, db = prisma) => {
+  return await db.avatars.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      image_path: true,
+    },
+  });
+};
+
 export const createUser = async (payload, db = prisma) => {
   return await db.users.create({
     data: {
@@ -35,7 +70,7 @@ export const createUser = async (payload, db = prisma) => {
 export const createAvatar = async (payload, db=prisma) => {
   return await db.avatars.create({
     data: {
-      image_path: `${payload.file_destination}/${payload.file_name}`,
+      image_path: `http://localhost:3000/auth/avatar/${payload.file_name}`,
       file_name: payload.file_name
     }
   })

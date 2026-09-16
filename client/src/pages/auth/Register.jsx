@@ -13,9 +13,12 @@ import {
 } from "../../components/common/Elements.jsx";
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Register = () => {
+  const { setUser } = useAuth();
+
   // to store the image
   const [profileImage, setProfileImage] = useState(null);
 
@@ -86,7 +89,7 @@ export const Register = () => {
         });
       }, 3000);
 
-      if (_response?.data?.success) return;
+      if (!_response?.data?.success) return;
 
       setUser(_response.data.user);
       navigate("/dashboard", { replace: true });

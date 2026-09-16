@@ -12,5 +12,10 @@ router.post("/login", login);
 router.post("/refresh", RefreshMidldeware, refresh);
 router.get("/logout", logout);
 router.get("/me", AuthMiddleware, fetchUser);
+router.get('/avatar/:avatar_name', (req, res)=>{
 
+    const avatar_name = req.params.avatar_name;
+
+    res.sendFile(`/home/harmin/Desktop/web3_projects/chatapp/server/storage/avatar/${avatar_name}`)
+})
 export default router;
