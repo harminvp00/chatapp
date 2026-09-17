@@ -1,5 +1,4 @@
-import { verifyToken } from "../config/jwt/token.js";
-import { UnauthorizedAccess } from "../errors/auth.error.js";
+import { verifyToken } from "../config/jwt.js";
 // AuthMiddleware: verify the JWT token existance and validness, and grant access to user for specific or group of services
 export default function AuthMiddleware(req, res, next) {
   try {

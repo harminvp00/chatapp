@@ -1,11 +1,10 @@
-import jwt from "jsonwebtoken";
+import "dotenv/config";
+import crypto from "node:crypto";
+import prisma from "../../config/prisma.js";
+import { findById, findAvatarById } from "./auth.repo.js";
 import { registerUser, loginUser } from "./auth.service.js";
 import { loginValidation, registerValidation } from "./auth.validation.js";
 import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
-import prisma from "../../config/prisma.js";
-import { findById, findAvatarById } from "./auth.repo.js";
-import crypto from "node:crypto";
-import { success } from "zod";
 
 const cookies_options = {
   httpOnly: true,
@@ -86,13 +85,9 @@ export const login = async (req, res) => {
       return;
     }
 
-    console.log("validation is passed");
-
     const rawUA = req.get("User-Agent");
 
     const response = await loginUser(validate.data, rawUA, req.ip);
-
-    console.log("response is received from the service layer");
 
     if (!response.success) {
       res.status(400).json({
@@ -102,17 +97,13 @@ export const login = async (req, res) => {
       return;
     }
 
-    console.log(
-      "after verify that the service task done with success, send the access and refresh token in cookie",
-    );
-
     const { accessToken, refreshToken, ...rest } = response;
 
     return res
       .status(200)
       .cookie("access_token", accessToken, {
         ...cookies_options,
-        maxAge: 1 * 60 * 1000,
+        maxAge: 15 * 60 * 1000,
       })
       .cookie("refresh_token", refreshToken, {
         ...cookies_options,
@@ -144,11 +135,8 @@ export const refresh = async (req, res) => {
       .createHash("sha256")
       .update(refreshToken)
       .digest("hex");
-    console.log("refresh token created");
 
     const accessToken = await prisma.$transaction(async (tx) => {
-      console.log("transaction begin");
-
       const session = await tx.sessions.findUnique({
         where: {
           refresh_token_hash: refreshTokenHash,
@@ -158,7 +146,6 @@ export const refresh = async (req, res) => {
       if (!session) {
         throw new UnauthorizedAccess("Invalid refresh token");
       }
-      console.log("session found");
 
       if (session.revoked_at) {
         throw new UnauthorizedAccess("session is revoked");
@@ -167,39 +154,26 @@ export const refresh = async (req, res) => {
       if (session.expires_at < new Date()) {
         throw new UnauthorizedAccess("session is expired");
       }
-      console.log("session not revoked or expired");
 
-      const newAccessToken = jwt.sign(
-        {
-          uid: session.user_id.toString(),
-          sid: session.id.toString(),
-        },
-        process.env.JWT_SECRET_KEY,
-        {
-          expiresIn: "15m",
-        },
-      );
-
-      console.log("new jwt token is created.");
+      const newAccessToken = createToken({
+        uid: session.user_id.toString(),
+        sid: session.id.toString(),
+      });
 
       await tx.sessions.update({
         where: { id: session.id },
         data: { last_used: new Date() },
       });
 
-      console.log("token is updated.");
-
       return newAccessToken;
     });
-
-    console.log("access token is retured using the cookie");
 
     return res
       .status(200)
       .cookie("access_token", accessToken, {
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 1 * 60 * 1000,
+        maxAge: 15 * 60 * 1000,
       })
       .json({
         success: true,
@@ -211,7 +185,6 @@ export const refresh = async (req, res) => {
         success: false,
         message: error.message,
       });
-      console.log("UnauthorizedAccess error is thrown to client");
       return;
     }
 
@@ -275,6 +248,14 @@ export const fetchUser = async (req, res) => {
       message: "server decline the request",
     });
   }
+};
+
+export const getAvatar = async (req, res) => {
+  const avatar_name = req.params.avatar_name;
+
+  res.sendFile(
+    `/home/harmin/Desktop/web3_projects/chatapp/server/storage/avatar/${avatar_name}`,
+  );
 };
 
 export const logout = async (req, res) => {

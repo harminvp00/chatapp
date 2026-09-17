@@ -1,21 +1,24 @@
-
 import { Router } from "express";
 import AuthMiddleware from "../../middlewares/AuthMiddleware.js";
 import RefreshMidldeware from "../../middlewares/RefreshMidldeware.js";
-import { register, fetchUser, login, logout, refresh } from "./auth.controller.js";
-import upload from '../../config/multer/multer.js';
+import {
+  register,
+  fetchUser,
+  login,
+  logout,
+  refresh,
+  getAvatar,
+} from "./auth.controller.js";
+import upload from "../../config/multer.js";
 
 const router = Router();
 
-router.post("/register", upload.single("profileImage"), register);
-router.post("/login", login);
-router.post("/refresh", RefreshMidldeware, refresh);
-router.get("/logout", logout);
-router.get("/me", AuthMiddleware, fetchUser);
-router.get('/avatar/:avatar_name', (req, res)=>{
+router
+  .get("/logout", logout)
+  .get("/me", AuthMiddleware, fetchUser)
+  .get("/avatar/:avatar_name", getAvatar)
+  .post("/register", upload.single("profileImage"), register)
+  .post("/login", login)
+  .post("/refresh", RefreshMidldeware, refresh);
 
-    const avatar_name = req.params.avatar_name;
-
-    res.sendFile(`/home/harmin/Desktop/web3_projects/chatapp/server/storage/avatar/${avatar_name}`)
-})
 export default router;
