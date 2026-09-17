@@ -1,4 +1,4 @@
-import transport from "./transport.js";
+import transport from "../../config/transport.js";
 
 const TEAM_EMAIL = "harminv251@gmail.com";
 export async function registerEmail(username, email, subject) {
@@ -174,7 +174,6 @@ export async function registerEmail(username, email, subject) {
         `,
   });
 }
-
 
 export async function loginEmail(username, email, subject) {
   await transport.sendMail({

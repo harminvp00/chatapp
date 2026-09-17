@@ -1,5 +1,4 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+
 import prisma from "../../config/prisma.js";
 import {
   createAvatar,
@@ -7,13 +6,11 @@ import {
   findByEmail,
   findByUsername,
 } from "./auth.repo.js";
-import "dotenv/config";
 import crypto from "node:crypto";
 import { PasswordError, UserError } from "../../errors/auth.error.js";
-import {
-  registerEmail,
-  loginEmail,
-} from "../../config/nodemailer/auth.email.js";
+import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
+import { comparePassword, hashPassword } from "../../config/bcrypt.js";
+import { createToken } from "../../config/jwt.js";
 
 // function to register the user in Postgres through prisma
 export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
@@ -25,7 +22,7 @@ export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
     file_name = filename;
     file_destination = destination;
   }
-  const hashed_password = await bcrypt.hash(password, 10);
+  const hashed_password = hashPassword(password);
 
   try {
     // database transsaction so on failure all operation will revert (rollback)
@@ -99,13 +96,10 @@ export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
       };
     }
 
-    const accessToken = jwt.sign(
-      {
-        uid: user.user_data.id.toString(),
-        sid: user.session.id.toString(),
-      },
-      process.env.JWT_SECRET_KEY,
-    );
+    const accessToken = createToken({
+      uid: user.user_data.id.toString(),
+      sid: user.session.id.toString(),
+    });
 
     // send acknowledgement to user through email
     try {
@@ -162,7 +156,7 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
         throw new UserError("no user exists with this mail");
       }
 
-      const matchPassword = await bcrypt.compare(password, _user.password_hash);
+      const matchPassword = comparePassword(password, _user.password_hash);
 
       if (!matchPassword) {
         throw new PasswordError();
@@ -199,17 +193,10 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
       };
     }
 
-    const accessToken = jwt.sign(
-      {
-        uid: db_response._user.id.toString(),
-        sid: db_response.session.id.toString(),
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "15m",
-      },
-    );
-
+    const accessToken = createToken({
+      uid: db_response._user.id.toString(),
+      sid: db_response.session.id.toString(),
+    });
 
     // send acknowledgement to user through email
     try {
