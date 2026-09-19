@@ -1,16 +1,13 @@
+import { _env } from "./config/env.js";
 
-import 'dotenv/config';
+export default function startApp(app) {
+  if (!app) {
+    throw new Error("App is not connected");
+  }
 
+  const PORT = _env.port || 3000;
 
-export default function startApp(app){
-
-    if(!app){
-        throw new Error("App is not connected");
-    }
-
-    const PORT = process.env.PORT || 3000;
-
-    app.listen(PORT, ()=> {
-        console.log(`App is running on http://localhost:${PORT}`)
-    })
+  app.listen(PORT, () => {
+    console.log(`App is running on http://localhost:${PORT}`);
+  });
 }

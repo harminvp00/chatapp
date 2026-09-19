@@ -1,4 +1,3 @@
-
 export class UserError extends Error {
   constructor(message = "user is not exists") {
     super(message);
@@ -13,10 +12,16 @@ export class UnauthorizedAccess extends Error {
   }
 }
 
-
 export class PasswordError extends Error {
   constructor(message = "wrong credentials") {
     super(message);
     this.name = "PasswordError";
+  }
+}
+
+export class TokenError extends Error {
+  constructor(message = "Token is not found") {
+    super(message);
+    this.name = "TokenError";
   }
 }

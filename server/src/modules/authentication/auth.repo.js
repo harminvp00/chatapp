@@ -1,4 +1,3 @@
-
 import prisma from "../../config/prisma.js";
 
 export const findByEmail = async (email, db = prisma) => {
@@ -17,22 +16,24 @@ export const findByEmail = async (email, db = prisma) => {
 export const findByUsername = async (username, db = prisma) => {
   return await db.users.findFirst({
     where: {
-      username
-    }, select: {
-      username: true
-    }
-  })
-}
+      username,
+    },
+    select: {
+      username: true,
+    },
+  });
+};
 
-export const findAvatarByEmail = async (email, db=prisma) => {
+export const findAvatarByEmail = async (email, db = prisma) => {
   return await db.avatars.findFirst({
-    where:{
-      email
-    }, select:{
-      image_path: true
-    }
-  })
-}
+    where: {
+      email,
+    },
+    select: {
+      image_path: true,
+    },
+  });
+};
 
 export const findById = async (id, db = prisma) => {
   return await db.users.findUnique({
@@ -62,16 +63,24 @@ export const findAvatarById = async (id, db = prisma) => {
 export const createUser = async (payload, db = prisma) => {
   return await db.users.create({
     data: {
-        ...payload
-    }
-  })
+      ...payload,
+    },
+  });
 };
 
-export const createAvatar = async (payload, db=prisma) => {
+export const createAvatar = async (payload, db = prisma) => {
   return await db.avatars.create({
     data: {
       image_path: `http://localhost:3000/auth/avatar/${payload.file_name}`,
-      file_name: payload.file_name
-    }
-  })
-}
+      file_name: payload.file_name,
+    },
+  });
+};
+
+export const createSession = async (payload, db = prisma) => {
+  return await db.sessions.create({
+    data: {
+      ...payload,
+    },
+  });
+};

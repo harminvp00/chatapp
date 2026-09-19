@@ -9,7 +9,7 @@ import {
 } from "../../components/common/Elements.jsx";
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
@@ -129,6 +129,7 @@ export const Login = () => {
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
+          <ContinueWithButtons/>
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}
