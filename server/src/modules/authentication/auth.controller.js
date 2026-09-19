@@ -1,4 +1,4 @@
-import "dotenv/config";
+import { _env } from "../../config/env.js";
 import crypto from "node:crypto";
 import prisma from "../../config/prisma.js";
 import { findById, findAvatarById } from "./auth.repo.js";
@@ -8,8 +8,8 @@ import { UserError, UnauthorizedAccess } from "../../errors/auth.error.js";
 
 const cookies_options = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: _env.node_env === "production",
+  sameSite: _env.node_env === "production" ? "none" : "lax",
 };
 
 export const register = async (req, res) => {

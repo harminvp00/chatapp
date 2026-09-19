@@ -5,7 +5,7 @@ import api from '../api/api.js';
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setloading] = useState(true);
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
     async function getCurrentUser() {

@@ -1,11 +1,74 @@
+import { OAuth2Client } from "google-auth-library";
+import { _env } from "../../config/env.js";
+import { api } from "../../config/axios.js";
+import { TokenError, UserError } from "../../errors/auth.error.js";
+import { handleGoogleAuth, registerGoogleUser } from "./oauth.service.js";
 
+const googleClient = new OAuth2Client(
+  _env.google_client_id,
+  _env.github_client_secret,
+  _env.google_callback_url,
+);
 
+export const googleLogin = async (req, res) => {
+  if (
+    !_env.google_client_id ||
+    !_env.google_client_secret ||
+    !_env.google_callback_url
+  ) {
+    res.status(500).json({
+      success: false,
+      message: "google login rejected due to server issue!",
+    });
+    return;
+  }
 
-const googleLogin = async () => {
+  res.redirect(
+    googleClient.generateAuthUrl({
+      access_type: "offline",
+      scope: ["openid", "email", "profile"],
+      prompt: "select_account",
+    }),
+  );
+};
 
-}
+export const googleCallback = async (req, res) => {
+  try {
+    const code =
+      typeof req.query.code === "string" ? req.query.code : undefined;
 
+    if (!code) {
+      res.status(404).send("code is not received from google");
+      return;
+    }
 
-const githubLogin = async () => {
+    const access_token = await handleGoogleAuth(code);
 
-}
+    const user_agent = req.get("User-Agent");
+    const response = await registerGoogleUser(access_token, user_agent, req.ip);
+
+    if (!response.success) return res.status(400).json(response);
+
+    return res.status(201).json(response);
+  } catch (err) {
+    if (err instanceof UserError) {
+      res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+      return;
+    }
+    if (err instanceof TokenError) {
+      res.status(404).json({
+        success: false,
+        message: err.message,
+      });
+      return;
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};

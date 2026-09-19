@@ -1,16 +1,13 @@
 
-
-import nodemailer from 'nodemailer';
-import 'dotenv/config';
-
+import { _env } from "./env.js";
+import nodemailer from "nodemailer";
 
 const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    auth:{
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-    }
+  host: _env.smtp_host,
+  auth: {
+    user: _env.smtp_user,
+    pass: _env.smtp_pass,
+  },
 });
-
 
 export default transport;
