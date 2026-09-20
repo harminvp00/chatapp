@@ -1,14 +1,16 @@
 import { _env } from "../../config/env.js";
-import { TokenError, UserError } from "../../errors/auth.error.js";
+import { TokenError, UserError, UserSession } from "../../errors/auth.error.js";
 import { api } from "../../config/axios.js";
 import prisma from "../../config/prisma.js";
+import { createToken } from "../../config/jwt.js";
 import {
-  createAvatar,
   createUser,
   findByEmail,
   createSession,
+  findByUsername,
 } from "../../modules/authentication/auth.repo.js";
-import { createRefreshToken } from "../../utils/refresh_token.js";
+import { CreateOAuthAccount, createGoogleAvatar } from "./oauth.repo.js";
+import createRefreshToken from "../../utils/refresh_token.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -51,17 +53,7 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
   if (!googleUser) {
     throw new UserError("unable to find the google user account");
   }
-
-  //   {
-  //   "id": "110190504010154674899",
-  //   "email": "vekariyaharmin96@gmail.com",
-  //   "verified_email": true,
-  //   "name": "Harmin Vekariya",
-  //   "given_name": "Harmin",
-  //   "family_name": "Vekariya",
-  //   "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ64jqinoBpVso_1h-4TTP2t3thDfGVqlPTZuvulSQqz8HgoV6O=s96-c"
-  // }
-
+b
   try {
     const user = await prisma.$transaction(async (tx) => {
       /**
@@ -70,19 +62,29 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
       const userRow = await findByEmail(googleUser.email, tx);
 
       if (userRow) {
-        throw new UserError();
+        throw new UserError("User is already exists");
       }
+
+      console.log(1);
+
+      const userNameExists = await findByUsername(googleUser.name, tx);
+
+      if (userNameExists) {
+        throw new UserError("Username is already exists");
+      }
+      console.log(2);
 
       let avatar_id = null;
       if (googleUser.picture) {
-        const avatar = await createAvatar(
+        const avatar = await createGoogleAvatar(
           {
-            file_name: `${googleUser.picture}`.split("/")[4],
+            file_name: `google-${googleUser.id}`,
             image_path: `${googleUser.picture}`,
           },
           tx,
         );
         avatar_id = avatar.id;
+        console.log(3);
       }
 
       const newUser = await createUser(
@@ -96,25 +98,84 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
         tx,
       );
 
+      console.log(4);
+
       const { refreshToken, refreshTokenHash } = createRefreshToken();
 
-      const session = await createSession({
-        user_id: newUser.id,
-        user_agent,
-        ip_address,
-        refresh_token_hash: refreshTokenHash,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
+      console.log(refreshToken, refreshTokenHash);
+
+      const session = await createSession(
+        {
+          user_id: newUser.id,
+          user_agent,
+          ip_address,
+          refresh_token_hash: refreshTokenHash,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+        tx,
+      );
+
+      console.log(5);
+
+      //   {
+      //   "id": "110190504010154674899",
+      //   "email": "vekariyaharmin96@gmail.com",
+      //   "verified_email": true,
+      //   "name": "Harmin Vekariya",
+      //   "given_name": "Harmin",
+      //   "family_name": "Vekariya",
+      //   "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ64jqinoBpVso_1h-4TTP2t3thDfGVqlPTZuvulSQqz8HgoV6O=s96-c"
+      // }
+
+      const oauthUser = await CreateOAuthAccount(
+        {
+          user_id: newUser.id,
+          provider_id: googleUser.id,
+          provider: "GOOGLE",
+        },
+        tx,
+      );
+
+      console.log(6);
+
+      return {
+        newUser,
+        session,
+        refreshToken,
+        imagePath: googleUser.picture,
+      };
     });
 
+    console.log(7);
+
+    if (!user) {
+      throw new UserError("error during saving user");
+    }
+
+    console.log(8);
+
+    const { newUser, session, refreshToken, imagePath } = user;
+
+    const accessToken = createToken({
+      uid: `${newUser.id}`,
+      sid: `${session.id}`,
+    });
+
+    console.log(9);
+
     return {
-      userRow,
-      session,
-      refreshToken,
+      success: true,
+      message: "Google User is created...",
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        imagePath,
+        refreshToken,
+        accessToken,
+      },
     };
   } catch (err) {
     return err;
   }
-
-  return googleUser;
 }

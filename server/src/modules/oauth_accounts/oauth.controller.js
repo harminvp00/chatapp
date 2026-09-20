@@ -10,6 +10,12 @@ const googleClient = new OAuth2Client(
   _env.google_callback_url,
 );
 
+const cookies_options = {
+  httpOnly: true,
+  secure: _env.node_env === "production",
+  sameSite: _env.node_env === "production" ? "none" : "lax",
+};
+
 export const googleLogin = async (req, res) => {
   if (
     !_env.google_client_id ||
@@ -49,7 +55,22 @@ export const googleCallback = async (req, res) => {
 
     if (!response.success) return res.status(400).json(response);
 
-    return res.status(201).json(response);
+    const { accessToken, refreshToken, userdata } = response;
+
+    return res
+      .status(201)
+      .cookie("access_token", accessToken, {
+        ...cookies_options,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .json(userdata)
+      .redirect(`${_env.client_url}/dashboard`);
+
   } catch (err) {
     if (err instanceof UserError) {
       res.status(400).json({
