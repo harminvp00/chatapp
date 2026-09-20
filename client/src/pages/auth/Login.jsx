@@ -10,6 +10,7 @@ import {
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
+import { useEffect } from "react";
 
 // this is the register.jsx card
 export const Login = () => {
@@ -19,9 +20,29 @@ export const Login = () => {
   });
 
   const [response, setResponse] = useState({
-    success: null,
-    message: "",
+    success: false,
+    message: "Hello Harmin",
   });
+
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search);
+    const message = param.get("message");
+
+    if (message) {
+      setResponse({
+        success: false,
+        message,
+      });
+
+      const timer = setTimeout(() => {
+        setResponse({
+          success: null,
+          message: "",
+        });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const [showLoader, setShowLoader] = useState(false);
 
@@ -122,14 +143,14 @@ export const Login = () => {
 
           {/* Showing the server response into form before the submit button */}
           <div
-            className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
+            className={`pt-1 w-70 text-${response.success === false ? "red" : "black"}-500`}
           >
             {response.message}
           </div>
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
-          <ContinueWithButtons/>
+          <ContinueWithButtons />
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}

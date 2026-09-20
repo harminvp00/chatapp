@@ -1,12 +1,19 @@
-
 import { Loader } from "../components/common/Elements";
 import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
 export const Dashboard = () => {
   const { user, loading, logout } = useAuth();
 
+  const [imageSrc, setImageSrc] = useState(user.imagePath);
   if (loading) {
     return <Loader message="Please waits 2 min while we fetching details" />;
   }
+
+  const handleImageError = () => {
+    setTimeout(() => {
+      setImageSrc(`${imageSrc}?retry=${Date.now()}`);
+    }, 1000);
+  };
   // alert(JSON.stringify(user))
   return (
     <div className="h-screen flex flex-col justify-center items-center">
@@ -14,10 +21,7 @@ export const Dashboard = () => {
 
       <div>
         {/* http://localhost:3000/auth/avatar/4ebc5513-294c-4877-94e5-3e6cad18f63a.jpeg */}
-        <img
-          src={user.imagePath}
-          
-        />
+        <img onError={handleImageError} src={imageSrc} />
         <p> {user.username} </p>
         <p> {user.email} </p>
         <p> {user.role} </p>

@@ -79,7 +79,6 @@ export const createAvatar = async (payload, db = prisma) => {
 };
 
 export const createSession = async (payload, db = prisma) => {
-  console.log(payload)
   return await db.sessions.create({
     data: {
       ...payload,
