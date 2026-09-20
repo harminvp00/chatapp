@@ -207,12 +207,10 @@ export const fetchUser = async (req, res) => {
       if (!user_data) {
         return null;
       }
-      console.log("user founded from database");
 
       const avatar_data = user_data.avatar_id
         ? await findAvatarById(user_data.avatar_id, tx)
         : null;
-      console.log("avatar_data is founded by user_id");
 
       return {
         user_data,

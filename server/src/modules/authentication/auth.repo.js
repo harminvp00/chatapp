@@ -6,6 +6,7 @@ export const findByEmail = async (email, db = prisma) => {
       email,
     },
     select: {
+      id: true,
       username: true,
       email: true,
       role: true,
