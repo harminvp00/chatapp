@@ -9,7 +9,11 @@ import {
   createSession,
   findByUsername,
 } from "../../modules/authentication/auth.repo.js";
-import { CreateOAuthAccount, createGoogleAvatar } from "./oauth.repo.js";
+import {
+  CreateOAuthAccount,
+  createGoogleAvatar,
+  findOauthUser,
+} from "./oauth.repo.js";
 import createRefreshToken from "../../utils/refresh_token.js";
 import { success } from "zod";
 
@@ -63,7 +67,14 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
       const userRow = await findByEmail(googleUser.email, tx);
 
       if (userRow) {
-        throw new UserError("User is already exists");
+        const response = await loginExistingOauthUser(
+          userRow.id,
+          user_agent,
+          ip_address,
+        );
+        return {
+          ...response,
+        };
       }
 
       const userNameExists = await findByUsername(googleUser.name, tx);
@@ -130,6 +141,15 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
       throw new UserError("error during saving user");
     }
 
+    if (user?.logged) {
+      const { success, message, tokens } = user;
+      return {
+        success,
+        message,
+        tokens,
+      };
+    }
+
     const { newUser, session, refreshToken, imagePath } = user;
 
     const accessToken = createToken({
@@ -140,15 +160,9 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
     return {
       success: true,
       message: "user is created",
-      user: {
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-        imagePath,
-      },
       tokens: {
-        refreshToken,
         accessToken,
+        refreshToken,
       },
     };
   } catch (err) {
@@ -161,6 +175,63 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
     return {
       success: false,
       message: err.message,
+    };
+  }
+}
+
+export async function loginExistingOauthUser(userId, user_agent, ip_address) {
+  try {
+    const userdata = await prisma.$transaction(async (tx) => {
+      const oauthuser = await findOauthUser(userId, tx);
+
+      const { refreshToken, refreshTokenHash } = createRefreshToken();
+
+      const session = await createSession(
+        {
+          user_id: oauthuser.user_id,
+          user_agent,
+          ip_address,
+          refresh_token_hash: refreshTokenHash,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+        tx,
+      );
+
+      return {
+        oauthuser,
+        refreshToken,
+        session,
+      };
+    });
+
+    if (!userdata) {
+      throw new UserError("User is not exist or created");
+    }
+
+    if (userdata.oauthuser.provider !== "GOOGLE") {
+      throw new UserError(
+        "the user is not belong to Google Oauth, Try other accounts or methods",
+      );
+    }
+
+    const accessToken = createToken({
+      uid: `${userdata.oauthuser.user_id}`,
+      sid: `${userdata.session.id}`,
+    });
+
+    return {
+      success: true,
+      message: "User is logged successfully",
+      tokens: {
+        accessToken,
+        refreshToken: userdata.refreshToken,
+      },
+      logged: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
     };
   }
 }

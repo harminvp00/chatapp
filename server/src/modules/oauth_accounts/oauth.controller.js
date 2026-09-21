@@ -55,11 +55,11 @@ export const googleCallback = async (req, res) => {
     const response = await registerGoogleUser(access_token, user_agent, req.ip);
 
     if (!response.success) {
-      console.log(response)
       return res.redirect(`${_env.client_url}?message=${response.message}`);
     }
 
-    const { success, message, user, tokens } = response;
+    const { success, message, tokens } = response;
+
 
     res
       .cookie("access_token", tokens.accessToken, {

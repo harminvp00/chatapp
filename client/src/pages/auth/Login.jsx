@@ -1,7 +1,9 @@
+
 import axios from "axios";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import googleIcon from "../../assets/bussiness/google.png";
+import githubIcon from "../../assets/bussiness/github.png";
 import {
   AuthButton,
   Loader,
@@ -21,7 +23,7 @@ export const Login = () => {
 
   const [response, setResponse] = useState({
     success: false,
-    message: "Hello Harmin",
+    message: "",
   });
 
   useEffect(() => {
@@ -150,7 +152,16 @@ export const Login = () => {
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
-          <ContinueWithButtons />
+          <ContinueWithButtons
+            providerIcon={googleIcon}
+            provider={"Google"}
+            endPoint={"/google/login"}
+          />
+          <ContinueWithButtons
+            providerIcon={githubIcon}
+            provider={"GitHub"}
+            endPoint={"/github/login"}
+          />
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}
