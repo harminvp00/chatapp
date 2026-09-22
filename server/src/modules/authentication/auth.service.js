@@ -1,6 +1,7 @@
 import prisma from "../../config/prisma.js";
 import {
   createAvatar,
+  createSession,
   createUser,
   findByEmail,
   findByUsername,
@@ -10,7 +11,7 @@ import { PasswordError, UserError } from "../../errors/auth.error.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
 import { createToken } from "../../config/jwt.js";
-import createRefreshToken  from "../../utils/refresh_token.js";
+import createRefreshToken from "../../utils/refresh_token.js";
 
 // function to register the user in Postgres through prisma
 export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
@@ -22,7 +23,7 @@ export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
     file_name = filename;
     file_destination = destination;
   }
-  const hashed_password = hashPassword(password);
+  const hashed_password = await hashPassword(password);
 
   try {
     // database transsaction so on failure all operation will revert (rollback)
@@ -134,45 +135,37 @@ export const loginUser = async (credentials, user_agent, ip_addr) => {
     const { email, password } = credentials;
 
     const db_response = await prisma.$transaction(async (tx) => {
-      const _user = await tx.users.findFirst({
-        where: {
-          email,
-        },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
-          password_hash: true,
-        },
-      });
+      const _user = await findByEmail(email, tx);
 
       if (!_user) {
         throw new UserError("no user exists with this mail");
       }
 
-      const matchPassword = comparePassword(password, _user.password_hash);
-
-      if (!matchPassword) {
-        throw new PasswordError();
+      if (!_user.password_hash) {
+        throw new UserError("Try to login using the oauth");
       }
 
-      const random = crypto.randomBytes(64);
-      const refreshToken = random.toString("hex");
-      const refreshTokenHash = crypto
-        .createHash("sha256")
-        .update(refreshToken)
-        .digest("hex");
+      const matchPassword = await comparePassword(
+        password,
+        _user.password_hash,
+      );
 
-      const session = await tx.sessions.create({
-        data: {
+      if (!matchPassword) {
+        throw new PasswordError("Wrong Credentials");
+      }
+
+      const { refreshToken, refreshTokenHash } = createRefreshToken();
+
+      const session = await createSession(
+        {
           user_id: _user.id,
           refresh_token_hash: refreshTokenHash,
           user_agent: user_agent,
           ip_address: ip_addr,
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
-      });
+        tx,
+      );
 
       return {
         _user,

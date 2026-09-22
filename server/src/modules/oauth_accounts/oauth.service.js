@@ -84,6 +84,9 @@ export async function registerGoogleUser(access_token, user_agent, ip_address) {
       }
 
       let avatar_id = null;
+      const file = googleUser.picture;
+      console.log(file);
+      
       if (googleUser.picture) {
         const avatar = await createGoogleAvatar(
           {

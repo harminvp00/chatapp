@@ -90,10 +90,7 @@ export const login = async (req, res) => {
     const response = await loginUser(validate.data, rawUA, req.ip);
 
     if (!response.success) {
-      res.status(400).json({
-        success: false,
-        message: response.message,
-      });
+      res.status(400).json(response);
       return;
     }
 
@@ -251,10 +248,12 @@ export const fetchUser = async (req, res) => {
 export const getAvatar = async (req, res) => {
   const avatar_name = req.params.avatar_name;
 
+  console.log(avatar_name)
   res.sendFile(
-    `/home/harmin/Desktop/web3_projects/chatapp/server/storage/avatar/${avatar_name}`,
+    `/home/harmin/Desktop/web3_projects/QuickChat/server/storage/avatar/${avatar_name}`,
   );
 };
+
 
 export const logout = async (req, res) => {
   try {

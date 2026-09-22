@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -71,18 +70,20 @@ export const Login = () => {
         },
       });
 
-      setResponse({
-        success: _response?.data?.success,
-        message: _response?.data?.message,
-      });
-
-      if (!_response?.data?.success) return;
+      console.log(response);
+      if (!response.success) {
+        setResponse({
+          success: _response?.data?.success,
+          message: _response?.data?.message,
+        });
+        return;
+      }
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setResponse({
         success: false,
-        message: err.message || "something wents wrong",
+        message: "something wents wrong",
       });
     } finally {
       setShowLoader(false);

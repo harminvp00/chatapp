@@ -1,29 +1,35 @@
 import { Loader } from "../components/common/Elements";
 import { useAuth } from "../context/AuthContext";
+import logout_src from "../assets/app/logout.svg";
 import { useState } from "react";
-import logout from "../assets/app/logout.svg";
+import default_avatar from "/default_avatar.jpeg";
 
 export const Dashboard = () => {
   const { user, loading, logout } = useAuth();
 
-  const [imageSrc, setImageSrc] = useState(user.imagePath);
   if (loading) {
     return <Loader message="Please waits 2 min while we fetching details" />;
   }
 
-  const handleImageError = () => {
-    setTimeout(() => {
-      setImageSrc(`${imageSrc}?retry=${Date.now()}`);
-    }, 1000);
+  const [imgSrc, setImgSrc] = useState(user.imagePath);
+  const handleImageError = (event) => {
+    setImgSrc("/default_avatar.jpeg");
   };
-  // alert(JSON.stringify(user))
+
+  console.log(imgSrc)
+
   return (
     <div className="h-screen flex flex-col justify-center items-center">
       <h1 className="text-3xl text-blue-500">Dashboard</h1>
 
       <div>
-        {/* http://localhost:3000/auth/avatar/4ebc5513-294c-4877-94e5-3e6cad18f63a.jpeg */}
-        <img onError={handleImageError} src={imageSrc} />
+        <img
+          className="w-50 h-50"
+          onError={handleImageError}
+          src={imgSrc || default_avatar}
+          alt="profile_picture"
+          title={user.username}
+        />
         <p> {user.username} </p>
         <p> {user.email} </p>
         <p> {user.role} </p>
@@ -31,9 +37,9 @@ export const Dashboard = () => {
 
       <button
         onClick={logout}
-        className="border px-5 py-2 cursor-pointer bg-blue-500 text-white rounded-xl "
+        className="border px-5 py-2 flex items-center justify-center gap-2 cursor-pointer bg-blue-500 text-white rounded-xl "
       >
-        <img src={logout} alt="" />
+        <img src={logout_src} alt="" />
         Logout
       </button>
     </div>
