@@ -158,11 +158,11 @@ export const Login = () => {
             provider={"Google"}
             endPoint={"/google/login"}
           />
-          <ContinueWithButtons
+          {/* <ContinueWithButtons
             providerIcon={githubIcon}
             provider={"GitHub"}
             endPoint={"/github/login"}
-          />
+          /> */}
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import AuthMiddleware from "../../middlewares/AuthMiddleware.js";
 import RefreshMidldeware from "../../middlewares/RefreshMidldeware.js";
+import { googleCallback, googleLogin } from "./auth.controller.js";
+
 import {
   register,
   fetchUser,
@@ -19,6 +21,11 @@ router
   .get("/avatar/:avatar_name", getAvatar)
   .post("/register", upload.single("profileImage"), register)
   .post("/login", login)
-  .post("/refresh", RefreshMidldeware, refresh);
+  .post("/refresh", RefreshMidldeware, refresh)
+  .get("/google/login", googleLogin)
+  .get("/google/callback", googleCallback);
+
+
+  
 
 export default router;

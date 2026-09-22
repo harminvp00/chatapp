@@ -6,12 +6,14 @@ import {
   findByEmail,
   findByUsername,
 } from "./auth.repo.js";
-import crypto from "node:crypto";
-import { PasswordError, UserError } from "../../errors/auth.error.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
 import { createToken } from "../../config/jwt.js";
 import createRefreshToken from "../../utils/refresh_token.js";
+import {
+  UserError,
+  PasswordError,
+} from "../../errors/auth.error.js";
 
 // function to register the user in Postgres through prisma
 export const registerUser = async (formdata, filedata, user_agent, ip_addr) => {
