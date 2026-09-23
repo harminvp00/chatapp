@@ -7,5 +7,9 @@ export const hashPassword = async (password) => {
 };
 
 export const comparePassword = async (plain, cipher) => {
+  console.log(
+    plain,
+    cipher
+  )
   return await bcrypt.compare(plain, cipher);
 };

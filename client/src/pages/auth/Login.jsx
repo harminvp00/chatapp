@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import googleIcon from "../../assets/bussiness/google.png";
+import githubIcon from "../../assets/bussiness/github.png";
 import {
   AuthButton,
   Loader,
@@ -10,6 +11,7 @@ import {
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
+import { useEffect } from "react";
 
 // this is the register.jsx card
 export const Login = () => {
@@ -19,9 +21,29 @@ export const Login = () => {
   });
 
   const [response, setResponse] = useState({
-    success: null,
+    success: false,
     message: "",
   });
+
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search);
+    const message = param.get("message");
+
+    if (message) {
+      setResponse({
+        success: false,
+        message,
+      });
+
+      const timer = setTimeout(() => {
+        setResponse({
+          success: null,
+          message: "",
+        });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const [showLoader, setShowLoader] = useState(false);
 
@@ -48,18 +70,20 @@ export const Login = () => {
         },
       });
 
-      setResponse({
-        success: _response?.data?.success,
-        message: _response?.data?.message,
-      });
-
-      if (!_response?.data?.success) return;
+      console.log(response);
+      if (!response.success) {
+        setResponse({
+          success: _response?.data?.success,
+          message: _response?.data?.message,
+        });
+        return;
+      }
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setResponse({
         success: false,
-        message: err.message || "something wents wrong",
+        message: "something wents wrong",
       });
     } finally {
       setShowLoader(false);
@@ -122,14 +146,23 @@ export const Login = () => {
 
           {/* Showing the server response into form before the submit button */}
           <div
-            className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
+            className={`pt-1 w-70 text-${response.success === false ? "red" : "black"}-500`}
           >
             {response.message}
           </div>
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
-          <ContinueWithButtons/>
+          <ContinueWithButtons
+            providerIcon={googleIcon}
+            provider={"Google"}
+            endPoint={"/google/login"}
+          />
+          {/* <ContinueWithButtons
+            providerIcon={githubIcon}
+            provider={"GitHub"}
+            endPoint={"/github/login"}
+          /> */}
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}
