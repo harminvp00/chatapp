@@ -70,7 +70,6 @@ export const Login = () => {
         },
       });
 
-      console.log(response);
       if (!response.success) {
         setResponse({
           success: _response?.data?.success,

@@ -5,16 +5,16 @@ const createRefreshToken = () => {
   try {
     const random = crypto.randomBytes(64);
     const refreshToken = random.toString("hex");
-    const refreshTokenHash = crypto
+    const refresh_token_hash = crypto
       .createHash("sha256")
       .update(refreshToken)
       .digest("hex");
 
-    if (!refreshToken || !refreshTokenHash) {
+    if (!refreshToken || !refresh_token_hash) {
       throw new TokenError();
     }
 
-    return { refreshToken, refreshTokenHash };
+    return { refreshToken, refresh_token_hash };
   } catch (error) {
     return error;
   }
