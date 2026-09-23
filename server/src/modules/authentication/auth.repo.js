@@ -15,6 +15,7 @@ export const findByEmail = async (email, db = prisma) => {
       username: true,
       email: true,
       role: true,
+      password_hash: true
     },
   });
 };
@@ -125,10 +126,22 @@ export async function createGoogleAvatar(payload, db = prisma) {
 export async function findOauthUser(payload, db = prisma) {
   return await db.oauth_accounts.findFirst({
     where: {
-      ...payload
+      ...payload,
     },
     select: {
       user_id: true,
+      provider: true,
+      provider_id: true,
+    },
+  });
+}
+
+export async function findOauthByUserID(id, db = prisma) {
+  return await db.oauth_accounts.findUnique({
+    where: {
+      user_id: id,
+    },
+    select: {
       provider: true,
       provider_id: true,
     },

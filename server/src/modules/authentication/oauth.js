@@ -15,6 +15,7 @@ import {
 import { TokenError, UserError } from "../../errors/auth.error.js";
 import createRefreshToken from "../../utils/refresh_token.js";
 import { success } from "zod";
+import { createUserSession } from "./auth.common.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -108,12 +109,12 @@ export async function authenticateGoogleUser(
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
-          response = await linkOauthGoogle(userRow, googleUser, tx);
+          response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
         } else {
           /**
            * if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login
            */
-          response = await loginOauthUser(userRow, googleUser, tx);
+          response = await loginGoogleOauthUser(userRow.id, googleUser.id, tx);
         }
       } else {
         /**
@@ -141,6 +142,9 @@ export async function authenticateGoogleUser(
           avatar_id = avatar.id;
         }
 
+        /**
+         * Create a new User
+         */
         const newUser = await createUser(
           {
             avatar_id: avatar_id,
@@ -177,22 +181,10 @@ export async function authenticateGoogleUser(
         throw new UserError("User ID missing!");
       }
 
-      /**
-       * Generates the refreshtoken and it hash using method createRefreshToken()
-       */
-      const { refreshToken, refreshTokenHash } = createRefreshToken();
-
-      /**
-       * All response provides uid that help to create session, and this code is reuse for all three response we are geting, no matter it is created first time, account is linked to Oauth or oauth account is login
-       */
-      const session = await createSession(
-        {
-          user_id: response.uid,
-          user_agent: user_agent,
-          ip_address: ip_address,
-          refresh_token_hash: refreshTokenHash,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
+      const { session, refreshToken } = createUserSession(
+        response.uid,
+        user_agent,
+        ip_address,
         tx,
       );
 
@@ -233,30 +225,30 @@ export async function authenticateGoogleUser(
   }
 }
 
-export async function linkOauthGoogle(user, googleUser, tx) {
+export async function linkOauthGoogle(user_id, provider_id, tx) {
   try {
     /** finding the oauth user first to know that it already not exist because in that case we can do directly login */
     const oauthuser = await findOauthUser(
       {
-        user_id: user.id,
+        user_id: user_id,
         provider: "GOOGLE",
-        provider_id: googleUser.id,
+        provider_id,
       },
       tx,
     );
 
     if (oauthuser) {
       /**
-       * In the case where a user have two login methods already, for example user already able to login with the PASSWORD + GOOGLE OAUTH, then in this case here Oauth account will exist already, so we can redirect the code towards the loginOauthUser, and send it response direct!
+       * In the case where a user have two login methods already, for example user already able to login with the PASSWORD + GOOGLE OAUTH, then in this case here Oauth account will exist already, so we can redirect the code towards the loginGoogleOauthUser, and send it response direct!
        */
-      return await loginOauthUser(user, googleUser, tx);
+      return await loginGoogleOauthUser(user_id, provider_id, tx);
     }
 
     const linked_oauth = await createOAuthAccount(
       {
-        user_id: user.id,
+        user_id,
         provider: "GOOGLE",
-        provider_id: googleUser.id,
+        provider_id,
       },
       tx,
     );
@@ -273,13 +265,13 @@ export async function linkOauthGoogle(user, googleUser, tx) {
   }
 }
 
-export async function loginOauthUser(user, googleUser, tx) {
+export async function loginGoogleOauthUser(user_id, provider_id, tx) {
   try {
     const oauthuser = await findOauthUser(
       {
-        user_id: user.id,
+        user_id: user_id,
         provider: "GOOGLE",
-        provider_id: googleUser.id,
+        provider_id,
       },
       tx,
     );
