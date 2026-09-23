@@ -91,7 +91,6 @@ export const Register = () => {
 
       if (!_response?.data?.success) return;
 
-      setUser(_response.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setResponse({

@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
 app.use(routes);
 
 app.use((req, res) => {
-  res.status(404).send("the requested route does not exist");
+  res.status(404).sendFile('/home/harmin/Desktop/web3_projects/QuickChat/server/public/NotFound.html');
 });
 
 // Global Error Handler
