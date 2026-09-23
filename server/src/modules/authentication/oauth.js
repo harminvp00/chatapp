@@ -47,30 +47,55 @@ export async function handleGoogleAuth(code) {
   }
 }
 
+/**
+ * This function is used to take google user from the google server by exchange to code we received via google client request
+ */
+export async function getGoogleUser(access_token) {
+  try {
+    const userResponseFromGoogle = await api.get(_env.google_user, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const googleUser = userResponseFromGoogle.data;
+
+    if (!googleUser) {
+      throw new UserError("Unable to get user info from GOOGLE");
+    }
+
+    return googleUser;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 export async function authenticateGoogleUser(
   access_token,
   user_agent,
   ip_address,
 ) {
   try {
-    const UserResponse = await api.get(_env.google_user, {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
-    const googleUser = await UserResponse.data;
-    if (!googleUser) {
-      throw new UserError("unable to find the google user account");
+    /** fetch the google user from google server by providing the access code */
+    const googleUser = await getGoogleUser(access_token);
+
+    /** In the case where google User can return not found of any other error */
+    if (!googleUser?.success) {
+      return { ...googleUser };
     }
 
-    const user = await prisma.$transaction(async (tx) => {
+    // THe Transaction is Begin from here
+    const transaction = await prisma.$transaction(async (tx) => {
       /**
        * check user is exist or not
        */
       const userRow = await findByEmail(googleUser.email, tx);
 
-      let response = null;
-      let avatar_id = null;
+      let response = null,
+        avatar_id = null;
 
       /**
        * Case 1: User Exist when:
@@ -126,69 +151,124 @@ export async function authenticateGoogleUser(
           },
           tx,
         );
+
+        // useful field id, email, name, picture
+        const oauthUser = await createOAuthAccount(
+          {
+            user_id: newUser.id,
+            provider_id: googleUser.id,
+            provider: "GOOGLE",
+          },
+          tx,
+        );
+
+        /**
+         * Store the newUser into the user variable,
+         * All function used user variable to store thier return user
+         * */
+        response = { uid: newUser.id, WhatsDone: "NEW_GOOGLE_OAUTH_CREATED" };
       }
 
+      if (response?.success) {
+        return { ...response };
+      }
+
+      if (!response?.uid) {
+        throw new UserError("User ID missing!");
+      }
+
+      /**
+       * Generates the refreshtoken and it hash using method createRefreshToken()
+       */
       const { refreshToken, refreshTokenHash } = createRefreshToken();
 
+      /**
+       * All response provides uid that help to create session, and this code is reuse for all three response we are geting, no matter it is created first time, account is linked to Oauth or oauth account is login
+       */
       const session = await createSession(
         {
-          user_id: newUser.id,
-          user_agent,
-          ip_address,
+          user_id: response.uid,
+          user_agent: user_agent,
+          ip_address: ip_address,
           refresh_token_hash: refreshTokenHash,
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
         tx,
       );
 
-      // useful field id, email, name, picture
-      const oauthUser = await createOAuthAccount(
-        {
-          user_id: newUser.id,
-          provider_id: googleUser.id,
-          provider: "GOOGLE",
-        },
-        tx,
-      );
-
-      return {
-        newUser,
-        session,
+      return (response = {
+        uid: response.uid,
+        sid: session.id,
         refreshToken,
-      };
+        WhatsDone: response.WhatsDone,
+      });
     });
 
-    if (!user) {
-      throw new UserError("error during saving user");
+    if (!transaction) {
+      throw new Error("Server issue, Please try out later");
     }
 
-   
+    // End of the transactions
+    const { uid, sid, refreshToken, WhatsDone } = transaction;
 
-    const { newUser, session, refreshToken } = user;
-
+    // Creating JWT token for verifications
     const accessToken = createToken({
-      uid: `${newUser.id}`,
-      sid: `${session.id}`,
+      uid: `${uid}`,
+      sid: `${sid}`,
     });
 
     return {
       success: true,
-      message: "user is created",
+      message: WhatsDone,
       tokens: {
         accessToken,
         refreshToken,
       },
     };
   } catch (err) {
-    if (err instanceof UserError) {
-      return {
-        success: false,
-        message: "User is already exists",
-      };
-    }
     return {
       success: false,
       message: err.message,
+    };
+  }
+}
+
+export async function linkOauthGoogle(user, googleUser, tx) {
+  try {
+    /** finding the oauth user first to know that it already not exist because in that case we can do directly login */
+    const oauthuser = await findOauthUser(
+      {
+        user_id: user.id,
+        provider: "GOOGLE",
+        provider_id: googleUser.id,
+      },
+      tx,
+    );
+
+    if (oauthuser) {
+      /**
+       * In the case where a user have two login methods already, for example user already able to login with the PASSWORD + GOOGLE OAUTH, then in this case here Oauth account will exist already, so we can redirect the code towards the loginOauthUser, and send it response direct!
+       */
+      return await loginOauthUser(user, googleUser, tx);
+    }
+
+    const linked_oauth = await createOAuthAccount(
+      {
+        user_id: user.id,
+        provider: "GOOGLE",
+        provider_id: googleUser.id,
+      },
+      tx,
+    );
+
+    return {
+      uid: linked_oauth.user_id,
+      WhatsDone: "PASSWORD_LINKED_GOOGLE_OAUTH",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
     };
   }
 }
@@ -199,35 +279,28 @@ export async function loginOauthUser(user, googleUser, tx) {
       {
         user_id: user.id,
         provider: "GOOGLE",
-        provider_id: googleUser.provider_id,
+        provider_id: googleUser.id,
       },
       tx,
     );
 
+    if (!oauthuser) {
+      throw new UserError("Google Oauth account is NOT Linked");
+    }
     if (oauthuser.provider !== "GOOGLE") {
       throw new UserError(
         "the user is not belong to Google Oauth, Try other account or login methods",
       );
     }
-  } catch (error) {
+
+    /**
+     * THIS UPDATE IS NOT DONE YET
+     * PASSWORD verification method will be introduce soon, User will not able to link the account directly after that */
+
     return {
-      success: false,
-      message: error.message,
+      uid: oauthuser.user_id,
+      WhatsDone: "GOOGLE_OAUTH_LOGIN_DIRECTLY",
     };
-  }
-}
-
-export async function linkOauthGoogle(user, googleUser, metaUser, tx) {
-  try {
-    /** finding the oauth user first to know that it already not exist because in that case we can do directly login */
-    const oauthuser = await findOauthUser(
-      { user_id: user.id, provider: "GOOGLE", provider_id },
-      tx,
-    );
-
-    if (oauthuser) {
-      throw new UserError("Oauth user is exists");
-    }
   } catch (error) {
     return {
       success: false,
