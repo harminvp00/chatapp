@@ -54,25 +54,10 @@ export const registerUser = async (
         const oauthUser = await findOauthUserByUserID(userExist.id, tx);
 
         if (oauthUser) {
-          // if provider is GOOGLE
-          if (oauthUser.provider === "GOOGLE") {
-            return {
-              success: false,
-              code: "GOOGLE_OAUTH_EXIST",
-              provider: oauthUser.provider,
-              message: "This email is already linked with the Google account",
-            };
-          }
-
-          // if provider is GITHUB
-          if (oauthUser.provider === "GITHUB") {
-            return {
-              success: false,
-              code: "GITHUB_OAUTH_EXIST",
-              provider: oauthUser.provider,
-              message: "This email is already linked with the Github account",
-            };
-          }
+          return {
+            success: false,
+            code: "OAUTH_EXIST",
+          };
         }
 
         const passwordUser = await checkPasswordExist(userExist.id, tx);
@@ -211,11 +196,10 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
         const oauth = await findOauthUserByUserID(_user.id, tx);
 
         if (oauth) {
-          response = await loginGoogleOauthUser(
-            _user.id,
-            oauth.provider_id,
-            tx,
-          );
+          return {
+            success: false,
+            code: "OAUTH_EXIST",
+          };
         }
       } else {
         // camapare founded user password and received password from the user
@@ -262,12 +246,16 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
       });
     });
 
+    if (transaction?.code) {
+      return { ...transaction };
+    }
     // check for uid that tell us either user exists or not
-    if (!transaction.uid) {
+    if (!transaction?.uid) {
       throw new UserError("User is not defined");
     }
 
     // create an access token using user id and session id
+    console.log(transaction)
     const accessToken = createToken(transaction.uid, transaction.sid);
 
     // send email to the user for login

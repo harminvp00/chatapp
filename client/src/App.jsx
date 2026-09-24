@@ -8,6 +8,7 @@ import { useAuth } from "./context/AuthContext.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Loader } from "./components/common/Elements.jsx";
 import { OAtuhExist } from "./pages/auth/OAtuhExist.jsx";
+import { PasswordVerification } from "./pages/auth/PasswordVerification.jsx";
 
 /* this App.jsx is main controller of this application, it contain all neccessary information about all function and routing structure */
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/oauth-exists" element={<OAtuhExist />} />
+          <Route path="/password-verify" element={<PasswordVerification/>} />
         </Route>
 
         {/*  Private Routes */}

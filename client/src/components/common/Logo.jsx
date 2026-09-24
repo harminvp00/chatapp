@@ -1,4 +1,5 @@
 
+// the quickchat icon is imported
 import quickchat from "/chat.png";
 
 export const Logo = () => {

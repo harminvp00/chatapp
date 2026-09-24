@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Link, replace, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/bussiness/google.png";
 import {
@@ -44,6 +44,20 @@ export const Login = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search);
+    const code = param.get("code");
+
+    if (code) {
+      if (code === "VERIFY_PASSWORD") {
+        navigate("/password-verify", {
+          state: { email: formData.email },
+          replace: true,
+        });
+      }
+    }
+  }, []);
+
   const [showLoader, setShowLoader] = useState(false);
 
   const navigate = useNavigate();
@@ -80,14 +94,8 @@ export const Login = () => {
       if (response.success) navigate("/dashboard", { replace: true });
     } catch (err) {
       const data = err?.response?.data;
-      if (data?.code === "GOOGLE_OAUTH_EXIST") {
-        navigate(
-          "/",
-          {
-            state: { provider: data?.provider, message: data?.message },
-          },
-          replace,
-        );
+      if (data?.code === "OAUTH_EXIST") {
+        navigate("/oauth-exists", { replace: true });
       }
       setResponse({
         success: false,
@@ -170,7 +178,7 @@ export const Login = () => {
         <div className="text-start flex gap-1">
           I dont have any account,
           <Link to={"/register"} className="text-blue-500 font-bold underline">
-            create one
+            create one?
           </Link>
         </div>
       </div>
