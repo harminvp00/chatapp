@@ -7,13 +7,15 @@ import { PublicRoute } from "./components/common/PublicRoute.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Loader } from "./components/common/Elements.jsx";
+import { OAtuhExist } from "./pages/auth/OAtuhExist.jsx";
+import { PasswordVerification } from "./pages/auth/PasswordVerification.jsx";
 
 /* this App.jsx is main controller of this application, it contain all neccessary information about all function and routing structure */
 function App() {
   const { user, loading } = useAuth();
 
-  if(loading){
-    return <Loader message={"Fetching user data from server"} />
+  if (loading) {
+    return <Loader message={"Fetching user data from server"} />;
   }
 
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route element={<PublicRoute user={user} />}>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/oauth-exists" element={<OAtuhExist />} />
+          <Route path="/password-verify" element={<PasswordVerification/>} />
         </Route>
 
         {/*  Private Routes */}
@@ -31,7 +35,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
-        <Route path="*" element={<NotFound/>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   );

@@ -1,17 +1,16 @@
 import axios from "axios";
-import { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, replace, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/bussiness/google.png";
-import githubIcon from "../../assets/bussiness/github.png";
 import {
   AuthButton,
   Loader,
   Title,
 } from "../../components/common/Elements.jsx";
 import close from "../../assets/app/close.svg";
-import quickchat from "/chat.png";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
 import { useEffect } from "react";
+import { Logo } from "../../components/common/Logo.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
@@ -42,6 +41,20 @@ export const Login = () => {
         });
       }, 4000);
       return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search);
+    const code = param.get("code");
+
+    if (code) {
+      if (code === "VERIFY_PASSWORD") {
+        navigate("/password-verify", {
+          state: { email: formData.email },
+          replace: true,
+        });
+      }
     }
   }, []);
 
@@ -78,8 +91,12 @@ export const Login = () => {
         return;
       }
 
-      navigate("/dashboard", { replace: true });
+      if (response.success) navigate("/dashboard", { replace: true });
     } catch (err) {
+      const data = err?.response?.data;
+      if (data?.code === "OAUTH_EXIST") {
+        navigate("/oauth-exists", { replace: true });
+      }
       setResponse({
         success: false,
         message: "something wents wrong",
@@ -91,16 +108,12 @@ export const Login = () => {
 
   return (
     // main container for register component
-
     <div className="h-screen w-screen flex items-center justify-center bg-black/20">
       {showLoader ? <Loader /> : ""}
       {/* card inside register component  */}
       <div className="flex flex-col items-center mx-5 py-10 px-5 rounded-4xl bg-white shadow-2xl">
         {/* header with app logo */}
-        <div className="text-blue-500 flex items-center gap-2 font-bold text-2xl mb-10 capitalize">
-          <img className="w-8 h-8" src={quickchat} alt="" />
-          QuickChat
-        </div>
+        <Logo />
 
         {/* title component  */}
         <div className="flex w-70 border-b border-black  pb-2">
@@ -152,23 +165,20 @@ export const Login = () => {
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
+
+          {/* OAuth Button Links */}
           <ContinueWithButtons
             providerIcon={googleIcon}
             provider={"Google"}
             endPoint={"/google/login"}
           />
-          {/* <ContinueWithButtons
-            providerIcon={githubIcon}
-            provider={"GitHub"}
-            endPoint={"/github/login"}
-          /> */}
         </form>
 
         {/* this is botttom message link for those who may do not have any account created yet! */}
         <div className="text-start flex gap-1">
           I dont have any account,
           <Link to={"/register"} className="text-blue-500 font-bold underline">
-            create one
+            create one?
           </Link>
         </div>
       </div>

@@ -93,6 +93,12 @@ export const Register = () => {
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      const data = err?.response?.data;
+      if (data?.code === "GOOGLE_OAUTH_EXIST") {
+        navigate("/oauth-exists", {
+          state: { provider: data?.provider, message: data?.message },
+        });
+      }
       setResponse({
         success: false,
         message: err.message,
@@ -233,9 +239,9 @@ export const Register = () => {
           <AuthButton btnTitle={"Create Account"} />
         </form>
 
-        <div className="text-start">
+        <div className="text-start flex gap-1">
           <Link to={"/"} className="text-blue-500 font-bold underline">
-            Login
+            Login?
           </Link>
           If You already have an account
         </div>
