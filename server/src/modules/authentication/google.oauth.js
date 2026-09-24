@@ -8,14 +8,11 @@ import {
   createSession,
   createUser,
   findByEmail,
-  findOauthUser,
+  findOauthUserByUserID,
   findByUsername,
   checkPasswordExist,
 } from "./auth.repo.js";
 import { TokenError, UserError } from "../../errors/auth.error.js";
-import createRefreshToken from "../../utils/refresh_token.js";
-import { success } from "zod";
-import { createUserSession } from "./auth.common.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -52,26 +49,19 @@ export async function handleGoogleAuth(code) {
  * This function is used to take google user from the google server by exchange to code we received via google client request
  */
 export async function getGoogleUser(access_token) {
-  try {
-    const userResponseFromGoogle = await api.get(_env.google_user, {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
+  const userResponseFromGoogle = await api.get(_env.google_user, {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
 
-    const googleUser = userResponseFromGoogle.data;
+  const googleUser = userResponseFromGoogle.data;
 
-    if (!googleUser) {
-      throw new UserError("Unable to get user info from GOOGLE");
-    }
-
-    return googleUser;
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+  if (!googleUser) {
+    throw new UserError("Unable to get user info from GOOGLE");
   }
+
+  return googleUser;
 }
 
 export async function authenticateGoogleUser(
@@ -82,11 +72,6 @@ export async function authenticateGoogleUser(
   try {
     /** fetch the google user from google server by providing the access code */
     const googleUser = await getGoogleUser(access_token);
-
-    /** In the case where google User can return not found of any other error */
-    if (!googleUser?.success) {
-      return { ...googleUser };
-    }
 
     // THe Transaction is Begin from here
     const transaction = await prisma.$transaction(async (tx) => {
@@ -109,14 +94,17 @@ export async function authenticateGoogleUser(
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
+          console.log(1);
           response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
         } else {
+          console.log(2);
           /**
            * if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login
            */
           response = await loginGoogleOauthUser(userRow.id, googleUser.id, tx);
         }
       } else {
+        console.log(3);
         /**
          * Case 2: User not exist when:
          * Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system
@@ -170,7 +158,7 @@ export async function authenticateGoogleUser(
          * Store the newUser into the user variable,
          * All function used user variable to store thier return user
          * */
-        response = { uid: newUser.id, WhatsDone: "NEW_GOOGLE_OAUTH_CREATED" };
+        response = { uid: newUser.id, WhatsDone: "Google is linked" };
       }
 
       if (response?.success) {
@@ -181,10 +169,12 @@ export async function authenticateGoogleUser(
         throw new UserError("User ID missing!");
       }
 
-      const { session, refreshToken } = createUserSession(
-        response.uid,
-        user_agent,
-        ip_address,
+      const { session, refreshToken } = await createSession(
+        {
+          user_id: response.uid,
+          user_agent,
+          ip_address,
+        },
         tx,
       );
 
@@ -204,10 +194,7 @@ export async function authenticateGoogleUser(
     const { uid, sid, refreshToken, WhatsDone } = transaction;
 
     // Creating JWT token for verifications
-    const accessToken = createToken({
-      uid: `${uid}`,
-      sid: `${sid}`,
-    });
+    const accessToken = createToken(uid, sid);
 
     return {
       success: true,
@@ -228,7 +215,7 @@ export async function authenticateGoogleUser(
 export async function linkOauthGoogle(user_id, provider_id, tx) {
   try {
     /** finding the oauth user first to know that it already not exist because in that case we can do directly login */
-    const oauthuser = await findOauthUser(
+    const oauthuser = await findOauthUserByUserID(
       {
         user_id: user_id,
         provider: "GOOGLE",
@@ -267,7 +254,7 @@ export async function linkOauthGoogle(user_id, provider_id, tx) {
 
 export async function loginGoogleOauthUser(user_id, provider_id, tx) {
   try {
-    const oauthuser = await findOauthUser(
+    const oauthuser = await findOauthUserByUserID(
       {
         user_id: user_id,
         provider: "GOOGLE",

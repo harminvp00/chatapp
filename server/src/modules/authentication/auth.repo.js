@@ -4,7 +4,63 @@
  */
 
 import prisma from "../../config/prisma.js";
+import createRefreshToken from "../../utils/refresh_token.js";
+import {
+  MissingField,
+  OperationNotFound,
+} from "../../errors/database.error.js";
+// User relation operations
 
+/** To retrive data from the user relation */
+
+/** This functionis Used to retrive anything from User relation based on any fields
+ */
+export const findInUser = async (
+  whereField,
+  selectField,
+  db = prisma,
+  retrival_type = "findFirst",
+) => {
+  if (!whereField)
+    throw new MissingField(
+      "you need to specify the 'where' argument, to search the records",
+    );
+  if (!selectField)
+    throw new MissingField(
+      "you need to specify the 'select' argument, to search the records",
+    );
+
+  switch (retrival_type) {
+    case "findFirst": {
+      return await db.users.findFirst({
+        where: whereField,
+        select: selectField,
+      });
+    }
+
+    case "findMany": {
+      return await db.users.findMany({
+        where: whereField,
+        select: selectField,
+      });
+    }
+
+    case "findUnique": {
+      return await db.users.findUnique({
+        where: whereField,
+        select: selectField,
+      });
+    }
+
+    default: {
+      throw new OperationNotFound(
+        `There no operation available into the 'findInUser()' method like ${retrival_type}`,
+      );
+    }
+  }
+};
+
+/** Find the user By it Email address  */
 export const findByEmail = async (email, db = prisma) => {
   return await db.users.findFirst({
     where: {
@@ -15,11 +71,13 @@ export const findByEmail = async (email, db = prisma) => {
       username: true,
       email: true,
       role: true,
-      password_hash: true
+      password_hash: true,
     },
   });
 };
 
+/** Find the user by its Username< this is used to ensure that the username is same username will not store again,
+ * into register controller and authenticate google user service  */
 export const findByUsername = async (username, db = prisma) => {
   return await db.users.findFirst({
     where: {
@@ -31,17 +89,7 @@ export const findByUsername = async (username, db = prisma) => {
   });
 };
 
-export const findAvatarByEmail = async (email, db = prisma) => {
-  return await db.avatars.findFirst({
-    where: {
-      email,
-    },
-    select: {
-      image_path: true,
-    },
-  });
-};
-
+/** Find User By the it id, */
 export const findById = async (id, db = prisma) => {
   return await db.users.findUnique({
     where: {
@@ -52,6 +100,17 @@ export const findById = async (id, db = prisma) => {
       email: true,
       role: true,
       avatar_id: true,
+    },
+  });
+};
+
+export const findAvatarByEmail = async (email, db = prisma) => {
+  return await db.avatars.findFirst({
+    where: {
+      email,
+    },
+    select: {
+      image_path: true,
     },
   });
 };
@@ -85,13 +144,20 @@ export const createAvatar = async (payload, db = prisma) => {
 };
 
 export const createSession = async (payload, db = prisma) => {
-  return await db.sessions.create({
+  const { refreshToken, refresh_token_hash } = createRefreshToken();
+
+  const session = await db.sessions.create({
     data: {
       ...payload,
+      refresh_token_hash,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   });
+
+  return { session, refreshToken };
 };
 
+// this is just for password verifications
 export async function checkPasswordExist(id, db = prisma) {
   const password = await db.users.findFirst({
     where: { id },
@@ -115,6 +181,7 @@ export async function createOAuthAccount(payload, db = prisma) {
   });
 }
 
+// Create Google Avatar
 export async function createGoogleAvatar(payload, db = prisma) {
   return await db.avatars.create({
     data: {
@@ -123,27 +190,15 @@ export async function createGoogleAvatar(payload, db = prisma) {
   });
 }
 
-export async function findOauthUser(payload, db = prisma) {
+export async function findOauthUserByUserID(
+  user_id,
+  db = prisma,
+  fields = null,
+) {
   return await db.oauth_accounts.findFirst({
     where: {
-      ...payload,
+      user_id,
     },
-    select: {
-      user_id: true,
-      provider: true,
-      provider_id: true,
-    },
-  });
-}
-
-export async function findOauthByUserID(id, db = prisma) {
-  return await db.oauth_accounts.findUnique({
-    where: {
-      user_id: id,
-    },
-    select: {
-      provider: true,
-      provider_id: true,
-    },
+    select: { user_id: true, provider: true, provider_id: true },
   });
 }

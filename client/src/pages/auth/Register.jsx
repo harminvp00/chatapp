@@ -93,6 +93,12 @@ export const Register = () => {
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      const data = err?.response?.data;
+      if (data?.code === "GOOGLE_OAUTH_EXIST") {
+        navigate("/oauth-exists", {
+          state: { provider: data?.provider, message: data?.message },
+        });
+      }
       setResponse({
         success: false,
         message: err.message,

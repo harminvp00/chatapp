@@ -1,11 +1,11 @@
-import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext();
-import api from '../api/api.js';
+import api from "../api/api.js";
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setloading] = useState(false);
+
 
   useEffect(() => {
     async function getCurrentUser() {
@@ -44,7 +44,7 @@ export default function AuthProvider({ children }) {
       await api.get(uri, { withCredentials: true });
       setUser(null);
     } catch (e) {
-      console.error(e.message)
+      console.error(e.message);
     }
   };
 
