@@ -239,9 +239,9 @@ export const Register = () => {
           <AuthButton btnTitle={"Create Account"} />
         </form>
 
-        <div className="text-start">
+        <div className="text-start flex gap-1">
           <Link to={"/"} className="text-blue-500 font-bold underline">
-            Login
+            Login?
           </Link>
           If You already have an account
         </div>

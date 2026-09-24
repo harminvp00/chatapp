@@ -2,9 +2,11 @@
  * UserError : this class is used to indicate the error about the user like when user already created or when user does not exists
  */
 export class UserError extends Error {
-  constructor(message = "user is not exists") {
+  code = "";
+  constructor(message = "user is not exists", code = "") {
     super(message);
     this.name = "UserError";
+    this.code = code;
   }
 }
 

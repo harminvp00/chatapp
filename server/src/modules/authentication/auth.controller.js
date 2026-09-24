@@ -13,6 +13,7 @@ import {
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
 import { success } from "zod";
+import { resolve } from "node:dns";
 
 const cookies_options = {
   httpOnly: true,
@@ -391,11 +392,17 @@ export const googleCallback = async (req, res) => {
     );
 
     if (!response.success) {
-      console.log("Failed response: ", response)
-      return res.redirect(`${_env.client_url}?message=${response.WhatsDone}`);
+      if (response?.code) {
+        return res
+          .status(400)
+          .redirect(`${_env.client_url}?code=${response?.code}&email=${response.email}`);
+      }
+      return res
+        .status(302)
+        .redirect(`${_env.client_url}?message=${response.WhatsDone}`);
     }
 
-    const { success, message, tokens } = response;
+    const { tokens } = response;
 
     res
       .cookie("access_token", tokens.accessToken, {
