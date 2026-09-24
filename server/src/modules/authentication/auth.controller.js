@@ -4,13 +4,15 @@ import prisma from "../../config/prisma.js";
 import { findById, findAvatarById } from "./auth.repo.js";
 import { registerUser, loginUser } from "./auth.password.js";
 import { loginValidation, registerValidation } from "./auth.validation.js";
-import { handleGoogleAuth, authenticateGoogleUser } from "./oauth.js";
+import { handleGoogleAuth, authenticateGoogleUser } from "./google.oauth.js";
 import {
   TokenError,
   UserError,
   UnauthorizedAccess,
+  PasswordError,
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
+import { success } from "zod";
 
 const cookies_options = {
   httpOnly: true,
@@ -36,7 +38,10 @@ export const register = async (req, res) => {
       return;
     }
 
+    // GET User Agent Details from the response
     const rawUA = req.get("User-Agent");
+
+    // calling register user service and geting repsonse from it! it could an error or tokens if new user created successfully
     const response = await registerUser(
       validation.data,
       req.file,
@@ -86,8 +91,18 @@ export const register = async (req, res) => {
   }
 };
 
+/**
+ *
+ * @param {*} req contain username & password
+ * @param {*} res can contain error response or can contain usual response such as tokens etc
+ * @returns return status, message, tokens if success true, and set cookies if sucess true
+ */
+
 export const login = async (req, res) => {
   try {
+    /**
+     * Validation: IF the validation success false then controller diretly send 400 error
+     */
     const validate = loginValidation.safeParse(req.body);
     if (!validate.success) {
       res.status(400).json({
@@ -97,15 +112,22 @@ export const login = async (req, res) => {
       return;
     }
 
+    // User Agent info from response
     const rawUA = req.get("User-Agent");
 
+    // Pass validate payload, User Agent and IP Address from the request coming to the service method loginUser()
     const response = await loginUser(validate.data, rawUA, req.ip);
 
+    // if success false, that means service failed to login user or any service error is occurs
     if (!response.success) {
       res.status(400).json(response);
       return;
     }
 
+    /**
+     * if success !== false, then we are able to destructure the property from response
+     * destructure access token and refresh token from the response and send them as cookie
+     */
     const { accessToken, refreshToken, ...rest } = response;
 
     return res
@@ -120,13 +142,24 @@ export const login = async (req, res) => {
       })
       .json(rest);
   } catch (err) {
-    // if userError is occured
+    /**
+     * Catch Bloack Handle all the error that can cause by the service
+     */
+
     if (err instanceof UserError) {
+      // if userError is occured
       res.status(400).json({
-        success: true,
+        success: false,
         message: err.message,
       });
       return;
+    }
+
+    if (err instanceof PasswordError) {
+      res.status(400).json({
+        success: false,
+        message: err.message,
+      });
     }
 
     return res.status(400).json({
@@ -208,7 +241,7 @@ export const fetchUser = async (req, res) => {
   try {
     // req.user comes from the decoded access token (AuthMiddleware), which
     // only carries { uid, sid } — not email — so look the user up by id.
-    const { uid } = req.user;
+    const { uid, sid } = req.user;
 
     const user = await prisma.$transaction(async (tx) => {
       const user_data = await findById(uid, tx);
@@ -351,10 +384,15 @@ export const googleCallback = async (req, res) => {
     const access_token = await handleGoogleAuth(code);
 
     const user_agent = req.get("User-Agent");
-    const response = await authenticateGoogleUser(access_token, user_agent, req.ip);
+    const response = await authenticateGoogleUser(
+      access_token,
+      user_agent,
+      req.ip,
+    );
 
     if (!response.success) {
-      return res.redirect(`${_env.client_url}?message=${response.message}`);
+      console.log("Failed response: ", response)
+      return res.redirect(`${_env.client_url}?message=${response.WhatsDone}`);
     }
 
     const { success, message, tokens } = response;

@@ -12,11 +12,12 @@ export const Dashboard = () => {
   }
 
   const [imgSrc, setImgSrc] = useState(user.imagePath);
-  const handleImageError = (event) => {
+  console.log(user.imagePath);
+
+  const handleImageError = () => {
     setImgSrc("/default_avatar.jpeg");
   };
 
-  console.log(imgSrc)
 
   return (
     <div className="h-screen flex flex-col justify-center items-center">
@@ -24,7 +25,7 @@ export const Dashboard = () => {
 
       <div>
         <img
-          className="w-50 h-50"
+          className="w-50 h-50 rounded-full"
           onError={handleImageError}
           src={imgSrc || default_avatar}
           alt="profile_picture"

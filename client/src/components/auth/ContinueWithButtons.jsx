@@ -8,7 +8,7 @@ export const ContinueWithButtons = ({providerIcon, provider, endPoint}) => {
         window.location.href = `${import.meta.env.VITE_SERVER_URI}/auth${endPoint}`;
       }}
     >
-      <img className="w-8 h-8" src={providerIcon} alt="google_image" />
+      <img className="w-8 h-8 capitalize" src={providerIcon} alt="google_image" />
       <span> Continue with {provider} </span>
     </button>
   );

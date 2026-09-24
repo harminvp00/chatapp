@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { TokenError } from "../errors/auth.error.js";
+import { createToken } from "../config/jwt.js";
 
 const createRefreshToken = () => {
   try {
