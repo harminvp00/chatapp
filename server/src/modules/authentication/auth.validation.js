@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const registerValidation = z.object({
@@ -22,7 +21,7 @@ export const registerValidation = z.object({
     .max(12, "password m"),
 });
 
-export const loginValidation  = z.object({
+export const loginValidation = z.object({
   email: z
     .string()
     .email()
@@ -35,3 +34,4 @@ export const loginValidation  = z.object({
     .min(8, "password must have 8 latters minimum")
     .max(12, "password m"),
 });
+
