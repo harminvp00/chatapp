@@ -2,14 +2,22 @@
  * UserError : this class is used to indicate the error about the user like when user already created or when user does not exists
  */
 export class UserError extends Error {
-  code = "";
-  constructor(message = "user is not exists", code = "") {
+  constructor(message = "user is not exists") {
     super(message);
     this.name = "UserError";
-    this.code = code;
   }
 }
 
+export class LinkedOauth extends Error {
+  code = "";
+  data = null;
+  constructor(message = "Enter Password to Login", code = "", data = null) {
+    super(message);
+    // this is used to recognize the Exact Instruction we want to perform in client side
+    this.code = code;
+    this.data = data;
+  }
+}
 /**
  * UnauthorizedAccess: to throw an error whenever the user has recognize an unauthorize like missing token or roles
  */

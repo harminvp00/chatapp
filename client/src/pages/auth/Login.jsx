@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../api/api.js";
 import { useState } from "react";
 import { Link, replace, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/bussiness/google.png";
@@ -47,11 +47,14 @@ export const Login = () => {
   useEffect(() => {
     const param = new URLSearchParams(window.location.search);
     const code = param.get("code");
+    const email = param.get("email");
+    const name = param.get("name");
+    const image = param.get("image");
 
     if (code) {
       if (code === "VERIFY_PASSWORD") {
         navigate("/password-verify", {
-          state: { email: formData.email },
+          state: { email, name, image },
           replace: true,
         });
       }
@@ -75,9 +78,7 @@ export const Login = () => {
     try {
       setShowLoader(true);
 
-      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/login`;
-      const _response = await axios.post(uri, formData, {
-        withCredentials: true,
+      const _response = await api.post("/auth/login", formData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -93,13 +94,16 @@ export const Login = () => {
 
       if (response.success) navigate("/dashboard", { replace: true });
     } catch (err) {
+      // this block not only catch error but it also redirect user to authenticate thier mail, some error provider the rediret instruction through codes, and provide data within it
       const data = err?.response?.data;
       if (data?.code === "OAUTH_EXIST") {
         navigate("/oauth-exists", { replace: true });
       }
+
+      // this is show error that uncatch by the server login-service 
       setResponse({
         success: false,
-        message: "something wents wrong",
+        message: err.message || "something wents wrong",
       });
     } finally {
       setShowLoader(false);

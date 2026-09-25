@@ -11,9 +11,16 @@ import {
   findOauthUserByUserID,
   findByUsername,
   checkPasswordExist,
+  findAvatarByEmail,
 } from "./auth.repo.js";
-import { TokenError, UserError } from "../../errors/auth.error.js";
+import {
+  LinkedOauth,
+  PasswordError,
+  TokenError,
+  UserError,
+} from "../../errors/auth.error.js";
 import { success } from "zod";
+import { comparePassword } from "../../config/bcrypt.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -89,28 +96,22 @@ export async function authenticateGoogleUser(
        * we will check that user has password or not, and based on that we redirect user to link or login!
        */
       if (userRow) {
-        console.log("User Exist");
         const PasswordExit = await checkPasswordExist(userRow.id, tx);
 
         /**
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
-          throw new UserError(
-            "Oauth Account is Exists Already",
-            "VERIFY_PASSWORD",
-          );
-        } else {
-          console.log("Password Not Exist");
+          console.log("I am here into the linked with gogole oauth");
 
+          response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
+        } else {
           /**
            * if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login
            */
           response = await loginGoogleOauthUser(userRow.id, googleUser.id, tx);
         }
       } else {
-        console.log("User Not Exist");
-
         /**
          * Case 2: User not exist when:
          * Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system
@@ -171,6 +172,11 @@ export async function authenticateGoogleUser(
         };
       }
 
+
+      if (!response?.success) {
+        throw new Error("the request is failed due to some reasons");
+      }
+
       const { session, refreshToken } = await createSession(
         {
           user_id: response.uid,
@@ -206,21 +212,13 @@ export async function authenticateGoogleUser(
     return {
       success: false,
       message: err.message,
-      code: err?.code ? err?.code : null,
     };
   }
 }
 
 export async function linkOauthGoogle(user_id, provider_id, tx) {
   /** finding the oauth user first to know that it already not exist because in that case we can do directly login */
-  const oauthuser = await findOauthUserByUserID(
-    {
-      user_id: user_id,
-      provider: "GOOGLE",
-      provider_id,
-    },
-    tx,
-  );
+  const oauthuser = await findOauthUserByUserID(user_id, tx);
 
   if (oauthuser) {
     /**
@@ -258,17 +256,15 @@ export async function loginGoogleOauthUser(user_id, provider_id, tx) {
   if (!oauthuser) {
     throw new UserError("Google Oauth account is NOT Linked");
   }
+
   if (oauthuser.provider !== "GOOGLE") {
     throw new UserError(
       "the user is not belong to Google Oauth, Try other account or login methods",
     );
   }
 
-  /**
-   * THIS UPDATE IS NOT DONE YET
-   * PASSWORD verification method will be introduce soon, User will not able to link the account directly after that */
-
   return {
+    success: true,
     uid: oauthuser.user_id,
     WhatsDone: "Google OAuth Account is Logged In",
   };
