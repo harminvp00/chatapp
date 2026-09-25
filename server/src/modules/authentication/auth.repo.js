@@ -5,60 +5,55 @@
 
 import prisma from "../../config/prisma.js";
 import createRefreshToken from "../../utils/refresh_token.js";
-import {
-  MissingField,
-  OperationNotFound,
-} from "../../errors/database.error.js";
-// User relation operations
+// import {
+//   MissingField,
+//   OperationNotFound,
+// } from "../../errors/database.error.js";
 
-/** To retrive data from the user relation */
+// export const findInUser = async (
+//   whereField,
+//   selectField,
+//   db = prisma,
+//   retrival_type = "findFirst",
+// ) => {
+//   if (!whereField)
+//     throw new MissingField(
+//       "you need to specify the 'where' argument, to search the records",
+//     );
+//   if (!selectField)
+//     throw new MissingField(
+//       "you need to specify the 'select' argument, to search the records",
+//     );
 
-/** This functionis Used to retrive anything from User relation based on any fields
- */
-export const findInUser = async (
-  whereField,
-  selectField,
-  db = prisma,
-  retrival_type = "findFirst",
-) => {
-  if (!whereField)
-    throw new MissingField(
-      "you need to specify the 'where' argument, to search the records",
-    );
-  if (!selectField)
-    throw new MissingField(
-      "you need to specify the 'select' argument, to search the records",
-    );
+//   switch (retrival_type) {
+//     case "findFirst": {
+//       return await db.users.findFirst({
+//         where: whereField,
+//         select: selectField,
+//       });
+//     }
 
-  switch (retrival_type) {
-    case "findFirst": {
-      return await db.users.findFirst({
-        where: whereField,
-        select: selectField,
-      });
-    }
+//     case "findMany": {
+//       return await db.users.findMany({
+//         where: whereField,
+//         select: selectField,
+//       });
+//     }
 
-    case "findMany": {
-      return await db.users.findMany({
-        where: whereField,
-        select: selectField,
-      });
-    }
+//     case "findUnique": {
+//       return await db.users.findUnique({
+//         where: whereField,
+//         select: selectField,
+//       });
+//     }
 
-    case "findUnique": {
-      return await db.users.findUnique({
-        where: whereField,
-        select: selectField,
-      });
-    }
-
-    default: {
-      throw new OperationNotFound(
-        `There no operation available into the 'findInUser()' method like ${retrival_type}`,
-      );
-    }
-  }
-};
+//     default: {
+//       throw new OperationNotFound(
+//         `There no operation available into the 'findInUser()' method like ${retrival_type}`,
+//       );
+//     }
+//   }
+// };
 
 /** Find the user By it Email address  */
 export const findByEmail = async (email, db = prisma) => {
@@ -190,11 +185,7 @@ export async function createGoogleAvatar(payload, db = prisma) {
   });
 }
 
-export async function findOauthUserByUserID(
-  user_id,
-  db = prisma,
-  fields = null,
-) {
+export async function findOauthUserByUserID(user_id, db = prisma) {
   return await db.oauth_accounts.findFirst({
     where: {
       user_id,
