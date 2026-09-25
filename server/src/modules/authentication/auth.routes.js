@@ -19,13 +19,10 @@ router
   .get("/logout", logout)
   .get("/me", AuthMiddleware, fetchUser)
   .get("/avatar/:avatar_name", getAvatar)
+  .get("/google/login", googleLogin)
+  .get("/google/callback", googleCallback)
   .post("/register", upload.single("profileImage"), register)
   .post("/login", login)
-  .post("/refresh", RefreshMidldeware, refresh)
-  .get("/google/login", googleLogin)
-  .get("/google/callback", googleCallback);
-
-
-  
+  .post("/refresh", RefreshMidldeware, refresh);
 
 export default router;

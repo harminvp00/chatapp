@@ -12,8 +12,6 @@ import {
   PasswordError,
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
-import { success } from "zod";
-import { resolve } from "node:dns";
 
 const cookies_options = {
   httpOnly: true,
@@ -294,7 +292,6 @@ export const fetchUser = async (req, res) => {
 export const getAvatar = async (req, res) => {
   const avatar_name = req.params.avatar_name;
 
-  console.log(avatar_name);
   res.sendFile(
     `/home/harmin/Desktop/web3_projects/QuickChat/server/storage/avatar/${avatar_name}`,
   );
@@ -391,11 +388,15 @@ export const googleCallback = async (req, res) => {
       req.ip,
     );
 
+    console.log(response)
     if (!response.success) {
+      
       if (response?.code) {
         return res
           .status(400)
-          .redirect(`${_env.client_url}?code=${response?.code}&email=${response.email}`);
+          .redirect(
+            `${_env.client_url}?code=${response?.code}&email=${response?.data?.email}&name=${response?.data?.name}&image=${response?.data?.image}`,
+          );
       }
       return res
         .status(302)
