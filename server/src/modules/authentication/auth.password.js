@@ -27,135 +27,128 @@ export const registerUser = async (
   user_agent,
   ip_address,
 ) => {
-  try {
-    // destructure input data
-    const { username, email, password } = formdata;
+  // destructure input data
+  const { username, email, password } = formdata;
 
-    // Create temparary variable to store file name and location later, if filedata exists
-    let file_name = null,
-      file_destination = null,
-      user = null;
+  // Create temparary variable to store file name and location later, if filedata exists
+  let file_name = null,
+    file_destination = null,
+    user = null;
 
-    // if file data exist store it details to the temparary variables file_name and file_destination
+  // if file data exist store it details to the temparary variables file_name and file_destination
+  if (filedata) {
+    const { filename, destination } = filedata;
+    file_name = filename;
+    file_destination = destination;
+  }
+
+  // create hash password and keep it seperate from the database transaction
+  const password_hash = await hashPassword(password);
+
+  // database transsaction so on failure all operation will revert (rollback)
+  const transaction = await prisma.$transaction(async (tx) => {
+    const userExist = await findByEmail(email, tx);
+
+    if (userExist) {
+      const oauthUser = await findOauthUserByUserID(userExist.id, tx);
+
+      if (oauthUser) {
+        return {
+          success: false,
+          code: "OAUTH_EXIST",
+        };
+      }
+
+      const passwordUser = await checkPasswordExist(userExist.id, tx);
+      if (passwordUser) {
+        throw new UserError("User is already Exists");
+      }
+    }
+
+    const uniqueUsername = await findByUsername(username, tx);
+
+    if (uniqueUsername) {
+      throw new UserError(`The username ${username} is not available`);
+    }
+
+    // create a avatar
+    let avatar_id = null;
     if (filedata) {
-      const { filename, destination } = filedata;
-      file_name = filename;
-      file_destination = destination;
-    }
-
-    // create hash password and keep it seperate from the database transaction
-    const password_hash = await hashPassword(password);
-
-    // database transsaction so on failure all operation will revert (rollback)
-    const transaction = await prisma.$transaction(async (tx) => {
-      const userExist = await findByEmail(email, tx);
-
-      if (userExist) {
-        const oauthUser = await findOauthUserByUserID(userExist.id, tx);
-
-        if (oauthUser) {
-          return {
-            success: false,
-            code: "OAUTH_EXIST",
-          };
-        }
-
-        const passwordUser = await checkPasswordExist(userExist.id, tx);
-        if (passwordUser) {
-          throw new UserError("User is already Exists");
-        }
-      }
-
-      const uniqueUsername = await findByUsername(username, tx);
-
-      if (uniqueUsername) {
-        throw new UserError(`The username ${username} is not available`);
-      }
-
-      // create a avatar
-      let avatar_id = null;
-      if (filedata) {
-        const avatar = await createAvatar(
-          {
-            file_name,
-            file_destination,
-          },
-          tx,
-        );
-        avatar_id = avatar.id;
-      }
-
-      // create new user into the database
-      const newUser = await createUser(
+      const avatar = await createAvatar(
         {
-          avatar_id,
-          username,
-          email,
-          password_hash,
+          file_name,
+          file_destination,
         },
         tx,
       );
-
-      user = newUser;
-
-      /**
-       * Create a session using user details and refresh token
-       */
-      const { session, refreshToken } = await createSession(
-        {
-          user_id: newUser.id,
-          user_agent,
-          ip_address,
-        },
-        tx,
-      );
-
-      return {
-        uid: newUser.id,
-        sid: session.id,
-        refreshToken,
-      };
-    });
-
-    if (transaction?.code) {
-      return { ...transaction };
-    }
-    // check that is user exists, impossible case still here to prevent rare errror
-    if (!transaction?.uid) {
-      return {
-        success: false,
-        message: "User is not created",
-        user: null,
-      };
+      avatar_id = avatar.id;
     }
 
-    // JWT generation
-    const accessToken = createToken(transaction.uid, transaction.sid);
+    // create new user into the database
+    const newUser = await createUser(
+      {
+        avatar_id,
+        username,
+        email,
+        password_hash,
+      },
+      tx,
+    );
 
-    // send acknowledgement to user through email
-    try {
-      await registerEmail(
-        user.username,
-        user.email,
-        "New sign-in to your QuickChat account",
-      );
-    } catch (error) {
-      console.log("failed to send an email to user", error);
-    }
+    user = newUser;
+
+    /**
+     * Create a session using user details and refresh token
+     */
+    const { session, refreshToken } = await createSession(
+      {
+        user_id: newUser.id,
+        user_agent,
+        ip_address,
+      },
+      tx,
+    );
 
     return {
-      success: true,
-      message: "User is created successfully",
-      accessToken,
-      refreshToken: transaction.refreshToken,
+      uid: newUser.id,
+      sid: session.id,
+      refreshToken,
     };
-  } catch (error) {
+  });
+
+  if (transaction?.code) {
+    return { ...transaction };
+  }
+  
+  // check that is user exists, impossible case still here to prevent rare errror
+  if (!transaction?.uid) {
     return {
       success: false,
-      message: error.name + ": " + error.message,
+      message: "User is not created",
       user: null,
     };
   }
+
+  // JWT generation
+  const accessToken = createToken(transaction.uid, transaction.sid);
+
+  // send acknowledgement to user through email
+  try {
+    await registerEmail(
+      user.username,
+      user.email,
+      "New sign-in to your QuickChat account",
+    );
+  } catch (error) {
+    console.log("failed to send an email to user", error);
+  }
+
+  return {
+    success: true,
+    message: "User is created successfully",
+    accessToken,
+    refreshToken: transaction.refreshToken,
+  };
 };
 
 /**
@@ -166,121 +159,116 @@ export const registerUser = async (
  * @returns tokens or errors to the controller
  */
 export const loginUser = async (credentials, user_agent, ip_address) => {
-  try {
-    // destructuring the data from credentials such as email and passoword
-    const { email, password } = credentials;
+  // destructuring the data from credentials such as email and passoword
+  const { email, password } = credentials;
+
+  /**
+   * Database transaction will be start from here, it is task like
+   * find user based on email
+   * throw error if user not exists
+   * verify password is matched or not
+   * generate refreshtoken and its hash to create sessions
+   * create access token outside the transactions
+   * return the data to the controller for send back the response
+   */
+  let userData = null;
+  const transaction = await prisma.$transaction(async (tx) => {
+    // get a user where email match
+    const _user = await findByEmail(email, tx);
+
+    // throw error if the user not found
+    if (!_user) {
+      throw new UserError("no user exists with this mail");
+    }
+
+    let response = null;
+
+    // throw error if the password is null,
+    if (!_user.password_hash) {
+      // const oauth = await findOauthUserByUserID(_user.id, tx);
+
+      // if (oauth) {
+      //   return {
+      //     success: false,
+      //     code: "OAUTH_EXIST",
+      //   };
+      // }
+
+      throw new UserError(`Account is already exists with ${email}`);
+    } else {
+      // camapare founded user password and received password from the user
+      const matchPassword = await comparePassword(
+        password,
+        _user.password_hash,
+      );
+
+      //  if password is incorrect throw PasswordError
+      if (!matchPassword) {
+        throw new PasswordError("Wrong Credentials");
+      }
+
+      // return useful information such as user, session and refresh token
+      response = {
+        uid: _user.id,
+        WhatsDone: "PASSWORD_USER_IS_LOGIN",
+      };
+    }
+
+    /**  Create a session using user details and refresh token
+     */
+    const { session, refreshToken } = await createSession(
+      {
+        user_id: _user.id,
+        user_agent,
+        ip_address,
+      },
+      tx,
+    );
 
     /**
-     * Database transaction will be start from here, it is task like
-     * find user based on email
-     * throw error if user not exists
-     * verify password is matched or not
-     * generate refreshtoken and its hash to create sessions
-     * create access token outside the transactions
-     * return the data to the controller for send back the response
+     * store _user detail into the userData variable,
+     * later it used to send detail in email in this service
      */
-    let userData = null;
-    const transaction = await prisma.$transaction(async (tx) => {
-      // get a user where email match
-      const _user = await findByEmail(email, tx);
+    userData = _user;
 
-      // throw error if the user not found
-      if (!_user) {
-        throw new UserError("no user exists with this mail");
-      }
-
-      let response = null;
-
-      // throw error if the password is null,
-      if (!_user.password_hash) {
-        const oauth = await findOauthUserByUserID(_user.id, tx);
-
-        if (oauth) {
-          return {
-            success: false,
-            code: "OAUTH_EXIST",
-          };
-        }
-      } else {
-        // camapare founded user password and received password from the user
-        const matchPassword = await comparePassword(
-          password,
-          _user.password_hash,
-        );
-
-        //  if password is incorrect throw PasswordError
-        if (!matchPassword) {
-          throw new PasswordError("Wrong Credentials");
-        }
-
-        // return useful information such as user, session and refresh token
-        response = {
-          uid: _user.id,
-          WhatsDone: "PASSWORD_USER_IS_LOGIN",
-        };
-      }
-
-      /**  Create a session using user details and refresh token
-       */
-      const { session, refreshToken } = await createSession(
-        {
-          user_id: _user.id,
-          user_agent,
-          ip_address,
-        },
-        tx,
-      );
-
-      /**
-       * store _user detail into the userData variable,
-       * later it used to send detail in email in this service
-       */
-      userData = _user;
-
-      // prepare response and send forward
-      return (response = {
-        uid: _user.id,
-        sid: session.id,
-        WhatsDone: "PASSWORD_USER_LOGIN",
-        refreshToken,
-      });
+    // prepare response and send forward
+    return (response = {
+      uid: _user.id,
+      sid: session.id,
+      WhatsDone: "PASSWORD_USER_LOGIN",
+      refreshToken,
     });
+  });
 
-    if (transaction?.code) {
-      return { ...transaction };
-    }
-    // check for uid that tell us either user exists or not
-    if (!transaction?.uid) {
-      throw new UserError("User is not defined");
-    }
-
-    // create an access token using user id and session id
-    console.log(transaction)
-    const accessToken = createToken(transaction.uid, transaction.sid);
-
-    // send email to the user for login
-    try {
-      await loginEmail(
-        userData.username,
-        userData.email,
-        "New Login to your QuickChat account",
-      );
-    } catch (error) {
-      console.log("failed to send an email to user", error);
-    }
-
-    //
-
-    return {
-      success: true,
-      message: "Login successfull",
-      accessToken,
-      refreshToken: transaction.refreshToken,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: `${error.name}: ${error.message}`,
-    };
+  if (transaction?.code) {
+    return { ...transaction };
   }
+  // check for uid that tell us either user exists or not
+  if (!transaction?.uid) {
+    throw new UserError("User is not defined");
+  }
+
+  // create an access token using user id and session id
+  console.log(transaction);
+  const accessToken = createToken(transaction.uid, transaction.sid);
+
+  // send email to the user for login
+  try {
+    await loginEmail(
+      userData.username,
+      userData.email,
+      "New Login to your QuickChat account",
+    );
+  } catch (error) {
+    console.log("failed to send an email to user", error);
+  }
+
+  //
+
+  return {
+    success: true,
+    message: "Login successfull",
+    accessToken,
+    refreshToken: transaction.refreshToken,
+  };
 };

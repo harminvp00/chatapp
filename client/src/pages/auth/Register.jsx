@@ -13,12 +13,9 @@ import {
 } from "../../components/common/Elements.jsx";
 import close from "../../assets/app/close.svg";
 import quickchat from "/chat.png";
-import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Register = () => {
-  const { setUser } = useAuth();
-
   // to store the image
   const [profileImage, setProfileImage] = useState(null);
 
@@ -89,16 +86,19 @@ export const Register = () => {
         });
       }, 3000);
 
-      if (!_response?.data?.success) return;
-
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      const data = err?.response?.data;
-      if (data?.code === "GOOGLE_OAUTH_EXIST") {
+      console.log(err);
+      if (err?.response?.data?.code === "OAUTH_EXIST") {
         navigate("/oauth-exists", {
-          state: { provider: data?.provider, message: data?.message },
+          state: {
+            message:
+              "The email found as an already registered, you can login through such option",
+          },
+          replace: true,
         });
       }
+
       setResponse({
         success: false,
         message: err.message,
