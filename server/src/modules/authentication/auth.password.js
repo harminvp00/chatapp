@@ -119,7 +119,7 @@ export const registerUser = async (
   if (transaction?.code) {
     return { ...transaction };
   }
-  
+
   // check that is user exists, impossible case still here to prevent rare errror
   if (!transaction?.uid) {
     return {

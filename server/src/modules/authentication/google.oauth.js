@@ -11,7 +11,7 @@ import {
   findOauthUserByUserID,
   findByUsername,
   checkPasswordExist,
-  findAvatarByEmail,
+  findOauthUser,
 } from "./auth.repo.js";
 import {
   LinkedOauth,
@@ -172,7 +172,6 @@ export async function authenticateGoogleUser(
         };
       }
 
-
       if (!response?.success) {
         throw new Error("the request is failed due to some reasons");
       }
@@ -244,25 +243,33 @@ export async function linkOauthGoogle(user_id, provider_id, tx) {
 }
 
 export async function loginGoogleOauthUser(user_id, provider_id, tx) {
-  const oauthuser = await findOauthUserByUserID(
-    {
-      user_id: user_id,
-      provider: "GOOGLE",
-      provider_id,
-    },
+  const oauthuser = await findOauthUser(
+    { provider_id, provider: "GOOGLE" },
     tx,
   );
+
+  console.log("oauth user response is come");
 
   if (!oauthuser) {
     throw new UserError("Google Oauth account is NOT Linked");
   }
 
+  console.log(oauthuser);
+  console.log("the oauth user is founded");
+  if (oauthuser.user_id !== user_id) {
+    throw new UserError(
+      "something went wrong, and user_id not matched with oauth user's user_id.",
+    );
+  }
+
+  console.log("Oauth user's provider is the GOOGLE");
   if (oauthuser.provider !== "GOOGLE") {
     throw new UserError(
       "the user is not belong to Google Oauth, Try other account or login methods",
     );
   }
 
+  console.log("Okay this function is run correctly, there is not issues here");
   return {
     success: true,
     uid: oauthuser.user_id,

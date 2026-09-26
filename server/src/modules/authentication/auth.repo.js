@@ -185,11 +185,27 @@ export async function createGoogleAvatar(payload, db = prisma) {
   });
 }
 
+// the find oauth user by user_id
 export async function findOauthUserByUserID(user_id, db = prisma) {
   return await db.oauth_accounts.findFirst({
     where: {
       user_id,
     },
     select: { user_id: true, provider: true, provider_id: true },
+  });
+}
+
+export async function findOauthUser(payload, db = prisma) {
+  return await db.oauth_accounts.findUnique({
+    where: {
+      provider_provider_id: {
+        ...payload
+      },
+    },
+    select: {
+      user_id: true,
+      provider: true,
+      provider_id: true,
+    },
   });
 }

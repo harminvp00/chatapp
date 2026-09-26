@@ -49,6 +49,7 @@ export const register = async (req, res) => {
       req.ip,
     );
 
+
     if (!response?.success) {
       if (response?.code === "OAUTH_EXIST") {
         return res.status(400).json({
@@ -386,12 +387,14 @@ export const googleCallback = async (req, res) => {
 
     const access_token = await handleGoogleAuth(code);
 
-    const user_agent = req.get("User-Agent");
     const response = await authenticateGoogleUser(
       access_token,
-      user_agent,
+       req.get("User-Agent"),
       req.ip,
     );
+
+
+    console.log(response)
 
     if (!response.success) {
       if (response?.code) {
