@@ -12,6 +12,7 @@ import {
   PasswordError,
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
+import { success } from "zod";
 
 const cookies_options = {
   httpOnly: true,
@@ -48,10 +49,15 @@ export const register = async (req, res) => {
       req.ip,
     );
 
-    if (!response.success) {
-      return res.status(400).json(response);
-    }
 
+    if (!response?.success) {
+      if (response?.code === "OAUTH_EXIST") {
+        return res.status(400).json({
+          success: false,
+          code: response?.code,
+        });
+      }
+    }
     const { accessToken, refreshToken, ...rest } = response;
 
     return res
@@ -85,7 +91,7 @@ export const register = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.code,
     });
   }
 };
@@ -381,16 +387,16 @@ export const googleCallback = async (req, res) => {
 
     const access_token = await handleGoogleAuth(code);
 
-    const user_agent = req.get("User-Agent");
     const response = await authenticateGoogleUser(
       access_token,
-      user_agent,
+       req.get("User-Agent"),
       req.ip,
     );
 
+
     console.log(response)
+
     if (!response.success) {
-      
       if (response?.code) {
         return res
           .status(400)

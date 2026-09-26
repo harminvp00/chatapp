@@ -2,7 +2,6 @@ import { Router } from "express";
 import AuthMiddleware from "../../middlewares/AuthMiddleware.js";
 import RefreshMidldeware from "../../middlewares/RefreshMidldeware.js";
 import { googleCallback, googleLogin } from "./auth.controller.js";
-
 import {
   register,
   fetchUser,
