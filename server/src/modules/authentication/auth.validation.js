@@ -17,8 +17,8 @@ export const registerValidation = z.object({
   password: z
     .string()
     .trim()
-    .min(8, "password must have 8 latters minimum")
-    .max(12, "password m"),
+    .min(8, "password is too small")
+    .max(12, "password is too large"),
 });
 
 export const loginValidation = z.object({
@@ -31,7 +31,7 @@ export const loginValidation = z.object({
   password: z
     .string()
     .trim()
-    .min(8, "password must have 8 latters minimum")
-    .max(12, "password m"),
+    .min(8, "password is too small")
+    .max(12, "password is too large"),
 });
 

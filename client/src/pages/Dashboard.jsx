@@ -18,10 +18,11 @@ export const Dashboard = () => {
     setImgSrc("/default_avatar.jpeg");
   };
 
-
   return (
     <div className="h-screen flex flex-col justify-center items-center">
-      <h1 className="text-3xl text-blue-500">Dashboard</h1>
+      <h1 className="text-3xl font-bold my-3 text-blue-500">
+        QuickChat Dashboard
+      </h1>
 
       <div>
         <img

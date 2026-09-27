@@ -1,21 +1,38 @@
-import axios from "axios";
+
+// aplication programming interface
+import api from "../../api/api.js";
+
+// react
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// SVG's
+
+// images .png/,svg
+import quickchat from "/chat.png";
 import camera_svg from "../../assets/app/camera.svg";
 import edit_uploaded_image from "../../assets/crud/edit.svg";
+import error_svg from "../../assets/status/error.svg";
 import remove_uploaded_image from "../../assets/crud/delete.svg";
+import close from "../../assets/app/close.svg";
+
 // UI elements
 import {
   AuthButton,
   Loader,
   Title,
 } from "../../components/common/Elements.jsx";
-import close from "../../assets/app/close.svg";
-import quickchat from "/chat.png";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Register = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  if (user) {
+    navigate("/dashboard", { replace: true });
+  }
+  const [message, setMessage] = useState(null);
+  const [showLoader, setShowLoader] = useState(false);
+
   // to store the image
   const [profileImage, setProfileImage] = useState(null);
 
@@ -28,15 +45,6 @@ export const Register = () => {
     email: "",
     password: "",
   });
-
-  const [response, setResponse] = useState({
-    success: null,
-    message: "",
-  });
-
-  const [showLoader, setShowLoader] = useState(false);
-
-  const navigate = useNavigate();
 
   function handleOnChange(event) {
     setFormData((prev) => ({
@@ -69,24 +77,24 @@ export const Register = () => {
         data.append("profileImage", profileImage);
       }
 
-      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/register`;
-      const _response = await axios.post(uri, data, {
+      const response = await api.post("/auth/register", data, {
         withCredentials: true,
       });
 
-      setResponse({
-        success: _response?.data?.success,
-        message: _response?.data?.message,
-      });
+      if (!response?.data?.success) {
+        setMessage({
+          success: response?.data?.success,
+          message: response?.data?.message,
+        });
+      }
 
       setTimeout(() => {
-        setResponse({
-          success: null,
-          message: "",
-        });
-      }, 3000);
+        setMessage(null);
+      }, 5000);
 
-      navigate("/dashboard", { replace: true });
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 2000);
     } catch (err) {
       console.log(err);
       if (err?.response?.data?.code === "OAUTH_EXIST") {
@@ -99,9 +107,9 @@ export const Register = () => {
         });
       }
 
-      setResponse({
+      setMessage({
         success: false,
-        message: err.message,
+        content: err?.response?.data?.message || "Something went wrong!",
       });
     } finally {
       setShowLoader(false);
@@ -229,14 +237,16 @@ export const Register = () => {
             required
           />
 
-          <div
-            className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
-          >
-            {response.message}
-          </div>
+          {/* Showing the server response into form before the submit button */}
+          {message ? (
+            <div className={`pt-1 w-70 text-red-500 flex items-center gap-2`}>
+              <img src={error_svg} alt="" />
+              {message.content}
+            </div>
+          ) : null}
 
           {/* Button component (common for the all auth pages) */}
-          <AuthButton btnTitle={"Create Account"} />
+          <AuthButton btnTitle={"create new account"} />
         </form>
 
         <div className="text-start flex gap-1">

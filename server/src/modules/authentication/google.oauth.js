@@ -13,14 +13,7 @@ import {
   checkPasswordExist,
   findOauthUser,
 } from "./auth.repo.js";
-import {
-  LinkedOauth,
-  PasswordError,
-  TokenError,
-  UserError,
-} from "../../errors/auth.error.js";
-import { success } from "zod";
-import { comparePassword } from "../../config/bcrypt.js";
+import { TokenError, UserError } from "../../errors/auth.error.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -102,8 +95,6 @@ export async function authenticateGoogleUser(
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
-          console.log("I am here into the linked with gogole oauth");
-
           response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
         } else {
           /**
@@ -248,28 +239,21 @@ export async function loginGoogleOauthUser(user_id, provider_id, tx) {
     tx,
   );
 
-  console.log("oauth user response is come");
-
   if (!oauthuser) {
     throw new UserError("Google Oauth account is NOT Linked");
   }
 
-  console.log(oauthuser);
-  console.log("the oauth user is founded");
   if (oauthuser.user_id !== user_id) {
     throw new UserError(
       "something went wrong, and user_id not matched with oauth user's user_id.",
     );
   }
 
-  console.log("Oauth user's provider is the GOOGLE");
   if (oauthuser.provider !== "GOOGLE") {
     throw new UserError(
       "the user is not belong to Google Oauth, Try other account or login methods",
     );
   }
-
-  console.log("Okay this function is run correctly, there is not issues here");
   return {
     success: true,
     uid: oauthuser.user_id,

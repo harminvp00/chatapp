@@ -1,7 +1,13 @@
 import { _env } from "../../config/env.js";
 import crypto from "node:crypto";
 import prisma from "../../config/prisma.js";
-import { findById, findAvatarById } from "./auth.repo.js";
+import {
+  findById,
+  findAvatarById,
+  findSession,
+  updateSessionLastUsed,
+  updateSessionRevoked,
+} from "./auth.repo.js";
 import { registerUser, loginUser } from "./auth.password.js";
 import { loginValidation, registerValidation } from "./auth.validation.js";
 import { handleGoogleAuth, authenticateGoogleUser } from "./google.oauth.js";
@@ -49,11 +55,11 @@ export const register = async (req, res) => {
       req.ip,
     );
 
-
     if (!response?.success) {
       if (response?.code === "OAUTH_EXIST") {
         return res.status(400).json({
           success: false,
+          message: "Oauth account is exists",
           code: response?.code,
         });
       }
@@ -89,19 +95,13 @@ export const register = async (req, res) => {
       return;
     }
 
+    console.log(error)
     return res.status(500).json({
       success: false,
-      message: error.code,
+      message: error.message,
     });
   }
 };
-
-/**
- *
- * @param {*} req contain username & password
- * @param {*} res can contain error response or can contain usual response such as tokens etc
- * @returns return status, message, tokens if success true, and set cookies if sucess true
- */
 
 export const login = async (req, res) => {
   try {
@@ -184,12 +184,7 @@ export const refresh = async (req, res) => {
       .digest("hex");
 
     const accessToken = await prisma.$transaction(async (tx) => {
-      const session = await tx.sessions.findUnique({
-        where: {
-          refresh_token_hash: refreshTokenHash,
-        },
-      });
-
+      const session = await findSession(refreshTokenHash, tx);
       if (!session) {
         throw new UnauthorizedAccess("Invalid refresh token");
       }
@@ -202,15 +197,9 @@ export const refresh = async (req, res) => {
         throw new UnauthorizedAccess("session is expired");
       }
 
-      const newAccessToken = createToken({
-        uid: session.user_id.toString(),
-        sid: session.id.toString(),
-      });
+      const newAccessToken = createToken(session.user_id, session.id);
 
-      await tx.sessions.update({
-        where: { id: session.id },
-        data: { last_used: new Date() },
-      });
+      await updateSessionLastUsed(session.id, tx);
 
       return newAccessToken;
     });
@@ -315,19 +304,12 @@ export const logout = async (req, res) => {
       return;
     }
 
-    const refreshTokenHash = crypto
+    const refresh_token_hash = crypto
       .createHash("sha256")
       .update(refreshToken)
       .digest("hex");
 
-    await prisma.sessions.update({
-      where: {
-        refresh_token_hash: refreshTokenHash,
-      },
-      data: {
-        revoked_at: new Date(),
-      },
-    });
+    await updateSessionRevoked(refresh_token_hash, prisma);
 
     res
       .clearCookie("access_token", {
@@ -389,12 +371,9 @@ export const googleCallback = async (req, res) => {
 
     const response = await authenticateGoogleUser(
       access_token,
-       req.get("User-Agent"),
+      req.get("User-Agent"),
       req.ip,
     );
-
-
-    console.log(response)
 
     if (!response.success) {
       if (response?.code) {
@@ -410,7 +389,6 @@ export const googleCallback = async (req, res) => {
     }
 
     const { tokens } = response;
-
     res
       .cookie("access_token", tokens.accessToken, {
         ...cookies_options,
@@ -423,12 +401,15 @@ export const googleCallback = async (req, res) => {
       })
       .redirect(`${_env.client_url}`);
   } catch (err) {
+    // User error catch
     if (err instanceof UserError) {
       res
         .status(400)
         .redirect(`${_env.client_url}/login?message=${err.message}`);
       return;
     }
+
+    // Token Error catch
     if (err instanceof TokenError) {
       res.status(404).json({
         success: false,
