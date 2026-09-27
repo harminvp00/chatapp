@@ -1,42 +1,47 @@
-import axios from "axios";
+// aplication programming interface
+import api from "../../api/api.js";
+// react
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// SVG's
+
+// images .png/,svg
 import camera_svg from "../../assets/app/camera.svg";
 import edit_uploaded_image from "../../assets/crud/edit.svg";
+import error_svg from "../../assets/status/error.svg";
 import remove_uploaded_image from "../../assets/crud/delete.svg";
+import close from "../../assets/app/close.svg";
+import { Logo } from "../../components/common/Logo.jsx";
+
 // UI elements
 import {
   AuthButton,
   Loader,
   Title,
 } from "../../components/common/Elements.jsx";
-import close from "../../assets/app/close.svg";
-import quickchat from "/chat.png";
+
+// Context
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Register = () => {
-  // to store the image
-  const [profileImage, setProfileImage] = useState(null);
+  // to get url location
+  const { getCurrentUser } = useAuth();
+  const navigate = useNavigate();
 
+  // state to store message, handle loading, profile image, and image preview
+  const [message, setMessage] = useState(null); // store response success and message come from api
+  const [showLoader, setShowLoader] = useState(false); // enable loader or off it
+  const [profileImage, setProfileImage] = useState(null); // store profle image temporary
+  const [profilePreview, setProfilePreview] = useState(null); // enable the image preview on the react
+
+  // store refrence of the image input element
   const Imagefile = useRef(null);
-  // to preview the image
-  const [profilePreview, setProfilePreview] = useState(null);
 
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
   });
-
-  const [response, setResponse] = useState({
-    success: null,
-    message: "",
-  });
-
-  const [showLoader, setShowLoader] = useState(false);
-
-  const navigate = useNavigate();
 
   function handleOnChange(event) {
     setFormData((prev) => ({
@@ -69,24 +74,20 @@ export const Register = () => {
         data.append("profileImage", profileImage);
       }
 
-      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/register`;
-      const _response = await axios.post(uri, data, {
+      const response = await api.post("/auth/register", data, {
         withCredentials: true,
       });
 
-      setResponse({
-        success: _response?.data?.success,
-        message: _response?.data?.message,
-      });
 
-      setTimeout(() => {
-        setResponse({
-          success: null,
-          message: "",
+      if (!response?.data?.success) {
+        setMessage({
+          success: response?.data?.success,
+          message: response?.data?.message,
         });
-      }, 3000);
+      }
 
-      navigate("/dashboard", { replace: true });
+      getCurrentUser();
+      navigate('/', {replace: true});
     } catch (err) {
       console.log(err);
       if (err?.response?.data?.code === "OAUTH_EXIST") {
@@ -99,12 +100,15 @@ export const Register = () => {
         });
       }
 
-      setResponse({
+      setMessage({
         success: false,
-        message: err.message,
+        content: err?.response?.data?.message || "Something went wrong!",
       });
     } finally {
       setShowLoader(false);
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
     }
   }
 
@@ -116,10 +120,7 @@ export const Register = () => {
       {/* card inside register component  */}
       <div className="flex flex-col items-center mx-5 py-10 px-5 rounded-4xl bg-white shadow-2xl">
         {/* header with app logo */}
-        <div className="text-blue-500 flex items-center gap-2 font-bold text-2xl mb-10 capitalize">
-          <img className="w-8 h-8" src={quickchat} alt="" />
-          QuickChat
-        </div>
+        <Logo />
 
         {/* title component  */}
         <div className="flex w-70 border-b border-black  pb-2">
@@ -229,14 +230,16 @@ export const Register = () => {
             required
           />
 
-          <div
-            className={`pt-1 w-70 text-${response.success ? "green" : "red"}-500`}
-          >
-            {response.message}
-          </div>
+          {/* Showing the server response into form before the submit button */}
+          {message ? (
+            <div className={`pt-1 w-70 text-red-500 flex items-center gap-2`}>
+              <img src={error_svg} alt="" />
+              {message.content}
+            </div>
+          ) : null}
 
           {/* Button component (common for the all auth pages) */}
-          <AuthButton btnTitle={"Create Account"} />
+          <AuthButton btnTitle={"create new account"} />
         </form>
 
         <div className="text-start flex gap-1">

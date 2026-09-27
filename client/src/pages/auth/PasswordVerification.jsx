@@ -43,7 +43,7 @@ export const PasswordVerification = () => {
         );
       }
 
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.log(
         "there is error, we will catch it earlier as soon as possible.",

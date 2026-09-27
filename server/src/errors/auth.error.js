@@ -32,7 +32,7 @@ export class UnauthorizedAccess extends Error {
  * PasswordError: when ever user password does not match with current password
  */
 export class PasswordError extends Error {
-  constructor(message = "wrong credentials") {
+  constructor(message = "incorrect password") {
     super(message);
     this.name = "PasswordError";
   }

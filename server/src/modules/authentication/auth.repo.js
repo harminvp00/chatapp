@@ -5,55 +5,10 @@
 
 import prisma from "../../config/prisma.js";
 import createRefreshToken from "../../utils/refresh_token.js";
-// import {
-//   MissingField,
-//   OperationNotFound,
-// } from "../../errors/database.error.js";
 
-// export const findInUser = async (
-//   whereField,
-//   selectField,
-//   db = prisma,
-//   retrival_type = "findFirst",
-// ) => {
-//   if (!whereField)
-//     throw new MissingField(
-//       "you need to specify the 'where' argument, to search the records",
-//     );
-//   if (!selectField)
-//     throw new MissingField(
-//       "you need to specify the 'select' argument, to search the records",
-//     );
+/** User relation operations */
 
-//   switch (retrival_type) {
-//     case "findFirst": {
-//       return await db.users.findFirst({
-//         where: whereField,
-//         select: selectField,
-//       });
-//     }
-
-//     case "findMany": {
-//       return await db.users.findMany({
-//         where: whereField,
-//         select: selectField,
-//       });
-//     }
-
-//     case "findUnique": {
-//       return await db.users.findUnique({
-//         where: whereField,
-//         select: selectField,
-//       });
-//     }
-
-//     default: {
-//       throw new OperationNotFound(
-//         `There no operation available into the 'findInUser()' method like ${retrival_type}`,
-//       );
-//     }
-//   }
-// };
+// Retrival Operations
 
 /** Find the user By it Email address  */
 export const findByEmail = async (email, db = prisma) => {
@@ -71,7 +26,7 @@ export const findByEmail = async (email, db = prisma) => {
   });
 };
 
-/** Find the user by its Username< this is used to ensure that the username is same username will not store again,
+/** Find the user by its Username this is used to ensure that the username is same username will not store again,
  * into register controller and authenticate google user service  */
 export const findByUsername = async (username, db = prisma) => {
   return await db.users.findFirst({
@@ -79,12 +34,13 @@ export const findByUsername = async (username, db = prisma) => {
       username,
     },
     select: {
+      id: true,
       username: true,
     },
   });
 };
 
-/** Find User By the it id, */
+/** find the user by its ID */
 export const findById = async (id, db = prisma) => {
   return await db.users.findUnique({
     where: {
@@ -99,17 +55,29 @@ export const findById = async (id, db = prisma) => {
   });
 };
 
-export const findAvatarByEmail = async (email, db = prisma) => {
-  return await db.avatars.findFirst({
-    where: {
-      email,
-    },
-    select: {
-      image_path: true,
+// this is helpful repository method to identify that the user contain password or not, it state that user has a password account or Google/Github Oauth account
+export async function checkPasswordExist(id, db = prisma) {
+  const password = await db.users.findFirst({
+    where: { id },
+    select: { password_hash: true },
+  });
+
+  return password ? true : false;
+}
+
+// Create Operations
+/** create user by email, username, password and the avatar_id */
+export const createUser = async (payload, db = prisma) => {
+  return await db.users.create({
+    data: {
+      ...payload,
     },
   });
 };
 
+// Avatar Relation Operation
+
+// find Avatar By avatar_id
 export const findAvatarById = async (id, db = prisma) => {
   return await db.avatars.findUnique({
     where: {
@@ -121,14 +89,7 @@ export const findAvatarById = async (id, db = prisma) => {
   });
 };
 
-export const createUser = async (payload, db = prisma) => {
-  return await db.users.create({
-    data: {
-      ...payload,
-    },
-  });
-};
-
+// create an avatar row for the password users, who store file path as localhost link
 export const createAvatar = async (payload, db = prisma) => {
   return await db.avatars.create({
     data: {
@@ -138,6 +99,18 @@ export const createAvatar = async (payload, db = prisma) => {
   });
 };
 
+/** Session relation operations */
+
+// find the unqies session based on the refresh token hash
+export const findSession = async (refresh_token_hash, db = prisma) => {
+  return await db.sessions.findUnique({
+    where: {
+      refresh_token_hash,
+    },
+  });
+};
+
+// create session using the user id, user agent, ip address, refresh token hash etc
 export const createSession = async (payload, db = prisma) => {
   const { refreshToken, refresh_token_hash } = createRefreshToken();
 
@@ -152,22 +125,21 @@ export const createSession = async (payload, db = prisma) => {
   return { session, refreshToken };
 };
 
-// this is just for password verifications
-export async function checkPasswordExist(id, db = prisma) {
-  const password = await db.users.findFirst({
+// Update the session's last used field using the
+export const updateSessionLastUsed = async (id, db = prisma) => {
+  return await db.sessions.update({
     where: { id },
-    select: { password_hash: true },
+    data: { last_used: new Date() },
   });
+};
 
-  return password ? true : false;
-}
+export const updateSessionRevoked = async (refresh_token_hash, db = prisma) => {
+  return await db.sessions.update({
+    where: { refresh_token_hash },
+    data: { revoked_at: new Date() },
+  });
+};
 
-/**
- *
- * @param payload contain database field such as user_id, provider_id, provider_name
- * @param db it is instance of prisma ORM to make operation database table like we doing operation on objects
- * @returns it is return object that contain oauth table row details which created by this operations
- */
 export async function createOAuthAccount(payload, db = prisma) {
   return await db.oauth_accounts.create({
     data: {
@@ -199,7 +171,7 @@ export async function findOauthUser(payload, db = prisma) {
   return await db.oauth_accounts.findUnique({
     where: {
       provider_provider_id: {
-        ...payload
+        ...payload,
       },
     },
     select: {

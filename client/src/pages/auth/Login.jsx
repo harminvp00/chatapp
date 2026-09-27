@@ -1,7 +1,8 @@
 import api from "../../api/api.js";
 import { useState } from "react";
-import { Link, replace, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/bussiness/google.png";
+import error_svg from "../../assets/status/error.svg";
 import {
   AuthButton,
   Loader,
@@ -11,18 +12,25 @@ import close from "../../assets/app/close.svg";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
 import { useEffect } from "react";
 import { Logo } from "../../components/common/Logo.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
+  const { getCurrentUser } = useAuth();
+  // the navigate variable
+  const navigate = useNavigate();
+
+  // show the loader
+  const [showLoader, setShowLoader] = useState(false);
+
+  // the form state
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const [response, setResponse] = useState({
-    success: false,
-    message: "",
-  });
+  // the response state, this show the message on the screen
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     const param = new URLSearchParams(window.location.search);
@@ -61,10 +69,6 @@ export const Login = () => {
     }
   }, []);
 
-  const [showLoader, setShowLoader] = useState(false);
-
-  const navigate = useNavigate();
-
   function handleOnChange(event) {
     setFormData((prev) => ({
       ...prev,
@@ -77,35 +81,34 @@ export const Login = () => {
 
     try {
       setShowLoader(true);
-
-      const _response = await api.post("/auth/login", formData, {
+      await api.post("/auth/login", formData, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      if (!response.success) {
-        setResponse({
-          success: _response?.data?.success,
-          message: _response?.data?.message,
-        });
-        return;
-      }
-
-      if (response.success) navigate("/dashboard", { replace: true });
+      getCurrentUser();
+      navigate("/", { replace: true });
     } catch (err) {
-      // this block not only catch error but it also redirect user to authenticate thier mail, some error provider the rediret instruction through codes, and provide data within it
+      /**  this block not only catch error but it also redirect user to authenticate thier mail,
+       * some error provider the rediret instruction through codes, and provide data within to that page
+       */
+
+      // extracting the data state from the err.response
       const data = err?.response?.data;
+
       if (data?.code === "OAUTH_EXIST") {
+        // if data code is Oauth Exist then this page redirect to the that page
         navigate("/oauth-exists", { replace: true });
       }
 
-      // this is show error that uncatch by the server login-service 
-      setResponse({
+      // this is show error that uncatch by the server login-service
+      setMessage({
         success: false,
-        message: err.message || "something wents wrong",
+        content: err?.response?.data?.message || "Something went wrong!",
       });
     } finally {
+      // this is the finally block where we make the loaded false because the API response is done
       setShowLoader(false);
     }
   }
@@ -161,11 +164,12 @@ export const Login = () => {
           />
 
           {/* Showing the server response into form before the submit button */}
-          <div
-            className={`pt-1 w-70 text-${response.success === false ? "red" : "black"}-500`}
-          >
-            {response.message}
-          </div>
+          {message ? (
+            <div className={`pt-1 w-70 text-red-500 flex items-center gap-2`}>
+              <img src={error_svg} alt="" />
+              {message.content}
+            </div>
+          ) : null}
 
           {/* Button component (common for the all auth pages) */}
           <AuthButton btnTitle={"Login"} />
