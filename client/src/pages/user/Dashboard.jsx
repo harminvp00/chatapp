@@ -1,7 +1,8 @@
-import { Loader } from "../components/common/Elements";
-import { useAuth } from "../context/AuthContext";
-import logout_src from "../assets/app/logout.svg";
+
+import { Loader } from "../../components/common/Elements";
+import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
+import logout_src from '../../assets/app/logout.svg'
 import default_avatar from "/default_avatar.jpeg";
 
 export const Dashboard = () => {
@@ -12,16 +13,16 @@ export const Dashboard = () => {
   }
 
   const [imgSrc, setImgSrc] = useState(user.imagePath);
-  console.log(user.imagePath);
 
   const handleImageError = () => {
     setImgSrc("/default_avatar.jpeg");
   };
 
-
   return (
     <div className="h-screen flex flex-col justify-center items-center">
-      <h1 className="text-3xl text-blue-500">Dashboard</h1>
+      <h1 className="text-3xl font-bold my-3 text-blue-500">
+        QuickChat Dashboard
+      </h1>
 
       <div>
         <img

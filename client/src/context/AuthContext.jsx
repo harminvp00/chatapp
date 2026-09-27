@@ -6,20 +6,19 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setloading] = useState(false);
 
+  async function getCurrentUser() {
+    try {
+      const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
+      const response = await api.get(uri, { withCredentials: true });
+      setUser(response.data.user);
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setloading(false);
+    }
+  }
 
   useEffect(() => {
-    async function getCurrentUser() {
-      try {
-        const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
-        const response = await api.get(uri, { withCredentials: true });
-        setUser(response.data.user);
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setloading(false);
-      }
-    }
-
     getCurrentUser();
   }, []);
 
@@ -49,7 +48,9 @@ export default function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, loading, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser, login, loading, logout, getCurrentUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -11,16 +11,9 @@ import {
   findOauthUserByUserID,
   findByUsername,
   checkPasswordExist,
-  findAvatarByEmail,
+  findOauthUser,
 } from "./auth.repo.js";
-import {
-  LinkedOauth,
-  PasswordError,
-  TokenError,
-  UserError,
-} from "../../errors/auth.error.js";
-import { success } from "zod";
-import { comparePassword } from "../../config/bcrypt.js";
+import { TokenError, UserError } from "../../errors/auth.error.js";
 
 export async function handleGoogleAuth(code) {
   try {
@@ -102,8 +95,6 @@ export async function authenticateGoogleUser(
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
-          console.log("I am here into the linked with gogole oauth");
-
           response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
         } else {
           /**
@@ -171,7 +162,6 @@ export async function authenticateGoogleUser(
           WhatsDone: "Google is linked",
         };
       }
-
 
       if (!response?.success) {
         throw new Error("the request is failed due to some reasons");
@@ -244,12 +234,8 @@ export async function linkOauthGoogle(user_id, provider_id, tx) {
 }
 
 export async function loginGoogleOauthUser(user_id, provider_id, tx) {
-  const oauthuser = await findOauthUserByUserID(
-    {
-      user_id: user_id,
-      provider: "GOOGLE",
-      provider_id,
-    },
+  const oauthuser = await findOauthUser(
+    { provider_id, provider: "GOOGLE" },
     tx,
   );
 
@@ -257,12 +243,17 @@ export async function loginGoogleOauthUser(user_id, provider_id, tx) {
     throw new UserError("Google Oauth account is NOT Linked");
   }
 
+  if (oauthuser.user_id !== user_id) {
+    throw new UserError(
+      "something went wrong, and user_id not matched with oauth user's user_id.",
+    );
+  }
+
   if (oauthuser.provider !== "GOOGLE") {
     throw new UserError(
       "the user is not belong to Google Oauth, Try other account or login methods",
     );
   }
-
   return {
     success: true,
     uid: oauthuser.user_id,

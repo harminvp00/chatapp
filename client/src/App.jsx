@@ -1,14 +1,15 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Register } from "./pages/auth/Register.jsx";
 import { Login } from "./pages/auth/Login.jsx";
-import { Dashboard } from "./pages/Dashboard.jsx";
+import { Dashboard } from "./pages/user/Dashboard.jsx";
+import { Profile } from "./pages/user/Profile.jsx";
 import { ProtectedRoute } from "./components/common/ProtectedRoute.jsx";
-import { PublicRoute } from "./components/common/PublicRoute.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Loader } from "./components/common/Elements.jsx";
 import { OAtuhExist } from "./pages/auth/OAtuhExist.jsx";
 import { PasswordVerification } from "./pages/auth/PasswordVerification.jsx";
+import { useEffect } from "react";
 
 /* this App.jsx is main controller of this application, it contain all neccessary information about all function and routing structure */
 function App() {
@@ -18,23 +19,25 @@ function App() {
     return <Loader message={"Fetching user data from server"} />;
   }
 
+  useEffect(() => {}, []);
+
   return (
     <div className="h-screen w-screen">
       <Routes>
-        {/* Public routes */}
-        <Route element={<PublicRoute user={user} />}>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/oauth-exists" element={<OAtuhExist />} />
-          <Route path="/password-verify" element={<PasswordVerification/>} />
-        </Route>
-
-        {/*  Private Routes */}
-        <Route element={<ProtectedRoute user={user} />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-
+        {!user ? (
+          <>
+            {/* Public routes */}
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/oauth-exists" element={<OAtuhExist />} />
+            <Route path="/password-verify" element={<PasswordVerification />} />
+          </>
+        ) : (
+          <Route element={<ProtectedRoute user={user} />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        )}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

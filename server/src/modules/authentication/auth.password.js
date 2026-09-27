@@ -12,7 +12,6 @@ import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
 import { createToken } from "../../config/jwt.js";
 import { UserError, PasswordError } from "../../errors/auth.error.js";
-import { loginGoogleOauthUser } from "./google.oauth.js";
 
 /**
  * @param formdata contain information like username, email & passoword
@@ -53,14 +52,15 @@ export const registerUser = async (
       const oauthUser = await findOauthUserByUserID(userExist.id, tx);
 
       if (oauthUser) {
+        // when oauth user exist
         return {
           success: false,
           code: "OAUTH_EXIST",
         };
       }
 
-      const passwordUser = await checkPasswordExist(userExist.id, tx);
-      if (passwordUser) {
+      const passwordExist = await checkPasswordExist(userExist.id, tx);
+      if (passwordExist) {
         throw new UserError("User is already Exists");
       }
     }
@@ -96,7 +96,6 @@ export const registerUser = async (
     );
 
     user = newUser;
-
     /**
      * Create a session using user details and refresh token
      */
@@ -119,7 +118,7 @@ export const registerUser = async (
   if (transaction?.code) {
     return { ...transaction };
   }
-  
+
   // check that is user exists, impossible case still here to prevent rare errror
   if (!transaction?.uid) {
     return {
@@ -178,7 +177,7 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 
     // throw error if the user not found
     if (!_user) {
-      throw new UserError("no user exists with this mail");
+      throw new UserError("user does not exist.");
     }
 
     let response = null;
@@ -204,7 +203,7 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 
       //  if password is incorrect throw PasswordError
       if (!matchPassword) {
-        throw new PasswordError("Wrong Credentials");
+        throw new PasswordError();
       }
 
       // return useful information such as user, session and refresh token
@@ -249,7 +248,6 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
   }
 
   // create an access token using user id and session id
-  console.log(transaction);
   const accessToken = createToken(transaction.uid, transaction.sid);
 
   // send email to the user for login
