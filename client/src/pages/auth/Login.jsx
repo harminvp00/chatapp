@@ -16,14 +16,10 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 // this is the register.jsx card
 export const Login = () => {
+  const { getCurrentUser } = useAuth();
   // the navigate variable
   const navigate = useNavigate();
 
-  const { user } = useAuth();
-
-  if (user) {
-    navigate("/dashboard", { replace: true });
-  }
   // show the loader
   const [showLoader, setShowLoader] = useState(false);
 
@@ -85,29 +81,20 @@ export const Login = () => {
 
     try {
       setShowLoader(true);
-
-      const response = await api.post("/auth/login", formData, {
+      await api.post("/auth/login", formData, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      // this is the response
-
-      if (!response?.data?.success) {
-        setMessage({
-          success: response?.data?.success,
-          content: response?.data?.message,
-        });
-      }
-
-      navigate("/dashboard", { replace: true });
+      getCurrentUser();
+      navigate("/", { replace: true });
     } catch (err) {
       /**  this block not only catch error but it also redirect user to authenticate thier mail,
        * some error provider the rediret instruction through codes, and provide data within to that page
        */
 
-      // this is the data state
+      // extracting the data state from the err.response
       const data = err?.response?.data;
 
       if (data?.code === "OAUTH_EXIST") {

@@ -2,6 +2,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 export const ProtectedRoute = ({ user }) => {
+  
   const location = useLocation();
 
 

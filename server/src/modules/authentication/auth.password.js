@@ -52,14 +52,15 @@ export const registerUser = async (
       const oauthUser = await findOauthUserByUserID(userExist.id, tx);
 
       if (oauthUser) {
+        // when oauth user exist
         return {
           success: false,
           code: "OAUTH_EXIST",
         };
       }
 
-      const passwordUser = await checkPasswordExist(userExist.id, tx);
-      if (passwordUser) {
+      const passwordExist = await checkPasswordExist(userExist.id, tx);
+      if (passwordExist) {
         throw new UserError("User is already Exists");
       }
     }
@@ -95,7 +96,6 @@ export const registerUser = async (
     );
 
     user = newUser;
-
     /**
      * Create a session using user details and refresh token
      */

@@ -18,7 +18,6 @@ import {
   PasswordError,
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
-import { success } from "zod";
 
 const cookies_options = {
   httpOnly: true,
@@ -79,6 +78,7 @@ export const register = async (req, res) => {
       })
       .json(rest);
   } catch (error) {
+    // this is the user error we get from the service 
     if (error instanceof UserError) {
       res.status(400).json({
         success: false,
@@ -95,7 +95,7 @@ export const register = async (req, res) => {
       return;
     }
 
-    console.log(error)
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,

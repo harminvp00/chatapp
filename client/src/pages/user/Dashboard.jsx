@@ -1,7 +1,8 @@
-import { Loader } from "../components/common/Elements";
-import { useAuth } from "../context/AuthContext";
-import logout_src from "../assets/app/logout.svg";
+
+import { Loader } from "../../components/common/Elements";
+import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
+import logout_src from '../../assets/app/logout.svg'
 import default_avatar from "/default_avatar.jpeg";
 
 export const Dashboard = () => {
@@ -12,7 +13,6 @@ export const Dashboard = () => {
   }
 
   const [imgSrc, setImgSrc] = useState(user.imagePath);
-  console.log(user.imagePath);
 
   const handleImageError = () => {
     setImgSrc("/default_avatar.jpeg");
