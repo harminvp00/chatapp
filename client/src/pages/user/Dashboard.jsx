@@ -1,8 +1,7 @@
-
 import { Loader } from "../../components/common/Elements";
 import { useAuth } from "../../context/AuthContext";
 import { Navbar } from "../../components/common/Navbar";
-
+import { ChatList } from "../chat/ChatList";
 export const Dashboard = () => {
   const { loading } = useAuth();
 
@@ -11,8 +10,13 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <Navbar/>
+    <div className="h-screen flex">
+      <Navbar />
+
+      <div>
+
+        <ChatList />
+      </div>
     </div>
   );
 };
