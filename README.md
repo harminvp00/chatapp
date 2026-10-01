@@ -5,7 +5,6 @@ I am Harmin Vekariya building this chat application for my college project to re
 I am currently studying into the GEC Palanpur in department of computer engineering, this project is created for subject "WEB APPLICATION DEVELOPMENT" final submission!
 
 ### Tech Stack
-
 **Frontend:**
 
 - ReactJS is frontend library
@@ -22,6 +21,16 @@ I am currently studying into the GEC Palanpur in department of computer engineer
 - I am used **PostgreSQL** as my primary database in this project because the data used in this project is relational, so its bettter to use a relational database management system
 
 - **PrismaORM** (v6) is used like a bridge between the Postgres and NodeJS, because JavaScript mostly like to deal within Objects and that what prisma do, it's convert the relation data to objects amd allow to do operation on them.
+
+### Database Structure
+- user
+    - profile
+    - users_otp
+    - oauth_accounts
+    - avatars
+    - sessions
+
+all retions are linked within the users relation with user_id filed.
 
 ### Current Features
 
