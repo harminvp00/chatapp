@@ -4,7 +4,7 @@ export const ChatList = () => {
   const { user } = useAuth();
   return (
     <div>
-        
+      <Chat  />
     </div>
   )
 };
