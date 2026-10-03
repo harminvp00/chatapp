@@ -74,7 +74,7 @@ export async function authenticateGoogleUser(
     /** fetch the google user from google server by providing the access code */
     const googleUser = await getGoogleUser(access_token);
 
-    // THe Transaction is Begin from here
+    // The Transaction is Begin from here
     const transaction = await prisma.$transaction(async (tx) => {
       /**
        * check user is exist or not
@@ -135,12 +135,13 @@ export async function authenticateGoogleUser(
           {
             avatar_id: avatar_id,
             email: googleUser.email,
-            username: googleUser.name,
             password_hash: null,
             role: "USER",
           },
           tx,
         );
+
+        await createProfile()
 
         // useful field id, email, name, picture
         const oauthUser = await createOAuthAccount(
