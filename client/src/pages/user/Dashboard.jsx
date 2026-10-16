@@ -14,8 +14,9 @@ export const Dashboard = () => {
       <Navbar />
 
       <div>
-
         <ChatList />
+
+        
       </div>
     </div>
   );
