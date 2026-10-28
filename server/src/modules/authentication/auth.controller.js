@@ -5,10 +5,11 @@ import {
   findById,
   findAvatarById,
   findSession,
+  findProfileByUser,
   updateSessionLastUsed,
   updateSessionRevoked,
 } from "./auth.repo.js";
-import { registerUser, loginUser } from "./auth.password.js";
+import { registerUser, loginUser, fetchUserData } from "./auth.password.js";
 import { loginValidation, registerValidation } from "./auth.validation.js";
 import { handleGoogleAuth, authenticateGoogleUser } from "./google.oauth.js";
 import {
@@ -78,7 +79,7 @@ export const register = async (req, res) => {
       })
       .json(rest);
   } catch (error) {
-    // this is the user error we get from the service 
+    // this is the user error we get from the service
     if (error instanceof UserError) {
       res.status(400).json({
         success: false,
@@ -237,36 +238,17 @@ export const fetchUser = async (req, res) => {
     // only carries { uid, sid } — not email — so look the user up by id.
     const { uid, sid } = req.user;
 
-    const user = await prisma.$transaction(async (tx) => {
-      const user_data = await findById(uid, tx);
+    const currUser = await fetchUserData(uid);
 
-      if (!user_data) {
-        return null;
-      }
-
-      const avatar_data = user_data.avatar_id
-        ? await findAvatarById(user_data.avatar_id, tx)
-        : null;
-
-      return {
-        user_data,
-        avatar_data,
-      };
-    });
-
-    if (!user) {
+    if (!currUser) {
       throw new UserError("User is not exist!");
     }
+
 
     return res.status(200).json({
       success: true,
       message: "user fetched successfully",
-      user: {
-        username: user.user_data.username,
-        email: user.user_data.email,
-        role: user.user_data.role,
-        imagePath: user.avatar_data ? user.avatar_data.image_path : null,
-      },
+      currUser,
     });
   } catch (error) {
     if (error instanceof UserError) {
@@ -276,10 +258,9 @@ export const fetchUser = async (req, res) => {
       });
       return;
     }
-
     return res.status(500).json({
       success: false,
-      message: "server decline the request",
+      message: error.message,
     });
   }
 };

@@ -87,16 +87,40 @@ model user_keys {
 model users {
   id                   BigInt                 @id @default(autoincrement())
   avatar_id            BigInt?
-  username             String                 @unique @db.VarChar(255)
   email                String                 @unique @db.VarChar(255)
   password_hash        String?                @db.VarChar(255)
   role                 user_roles             @default(USER)
+  email_verified       Boolean                @default(false)
   conversation_members conversation_members[]
   messages             messages[]
   oauth_accounts       oauth_accounts[]
+  profile              profile?
   sessions             sessions[]
   user_keys            user_keys?
   avatars              avatars?               @relation(fields: [avatar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_avatar")
+  users_otp            users_otp[]
+}
+
+model profile {
+  bio             String?
+  birthday        DateTime?    @db.Timestamptz(6)
+  id              BigInt       @id @default(autoincrement())
+  home_address    String?      @db.VarChar(255)
+  gender          gender_enum?
+  phone           String?      @unique @db.VarChar(50)
+  prefer_language String?      @db.VarChar(100)
+  user_id         BigInt?      @unique
+  username        String       @unique @db.VarChar(255)
+  users           users?       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_unique_profile")
+}
+
+model users_otp {
+  id            BigInt            @id @default(autoincrement())
+  user_id       BigInt?
+  otp_encrypted String?           @db.VarChar(255)
+  otp_purpose   otp_purpose_enum?
+  otp_expiry    DateTime?         @db.Timestamptz(6)
+  users         users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_users_otp")
 }
 
 enum auth_providers {
@@ -115,4 +139,16 @@ enum message_types {
 enum user_roles {
   USER
   ADMIN
+}
+
+enum gender_enum {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum otp_purpose_enum {
+  EMAIL_VERIFY
+  FORGET_PASSWORD
+  LOGIN_ACCOUNT
 }

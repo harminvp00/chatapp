@@ -30,10 +30,9 @@ I am currently studying into the GEC Palanpur in department of computer engineer
     - avatars
     - sessions
 
-all retions are linked within the users relation with user_id filed.
+all retions are linked within the users relation with user_id field.
 
 ### Current Features
-
 - Email/Password based authentications
 - refresh token + access token architecture
 - Google Oauth Integration (Currenlty No PKCE)

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons";
 import google from "/google.png";
 import github from "/github.png";
@@ -8,7 +8,14 @@ import { Logo } from "../../components/common/Logo";
 export const OAtuhExist = () => {
 
   const location = useLocation()
-  const message = location.state?.message || "You have to verify using such options "
+  const navigate = useNavigate();
+  const message = location.state?.message;
+  
+  console.log(message)
+  if(!message || message === undefined){  
+    navigate('/', {replace: true});
+  }
+
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-black/20">
       <div className="bg-white h-fit flex flex-col items-center justify-center rounded-2xl p-5 m-10">

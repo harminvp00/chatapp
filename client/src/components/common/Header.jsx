@@ -1,3 +1,4 @@
+
 import quickchat from "/chat.png";
 
 const Header = () => {
@@ -10,4 +11,6 @@ const Header = () => {
     </nav>
   );
 };
+
+// exporting the Header 
 export default Header;
