@@ -1,6 +1,6 @@
 // this is naviagation bar of the quick chat application.
 
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 import {
   ChatSVG,
   LogoutSVG,
@@ -9,7 +9,7 @@ import {
 } from "../../assets/svgs/SVGs.jsx";
 import { replace, useNavigate } from "react-router-dom";
 
-export const Navbar = () => {
+export const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigateTo = useNavigate();
   const handleLogoutUser = async () => {
@@ -48,11 +48,14 @@ export const Navbar = () => {
           <LogoutSVG fill={"#fff"} />
         </button>
         <button
+          onClick={()=>{
+            navigateTo('/profile')
+          }}
           type="button"
           className="hover:opacity-50 cursor-pointer"
           title={user.username}
         >
-          <img className="w-8 h-8 rounded-full" src={user.imagePath} alt="" />
+          <img className="w-8 h-8 rounded-full" src={(user.imagePath == "" || !user.imagePath) ? './default_avatar.jpeg' : user.imagePath} alt="" />
         </button>
       </div>
     </nav>

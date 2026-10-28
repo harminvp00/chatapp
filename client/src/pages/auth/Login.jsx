@@ -87,7 +87,7 @@ export const Login = () => {
         },
       });
 
-      getCurrentUser();
+      await getCurrentUser();
       navigate("/", { replace: true });
     } catch (err) {
       /**  this block not only catch error but it also redirect user to authenticate thier mail,

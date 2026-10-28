@@ -4,9 +4,14 @@ import {
   createUser,
   createSession,
   findByEmail,
-  findByUsername,
+  findById,
+  createProfile,
   findOauthUserByUserID,
+  findProfileByUser,
   checkPasswordExist,
+  usernameExists,
+  findAvatarById,
+  findUnameById
 } from "./auth.repo.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
@@ -65,8 +70,8 @@ export const registerUser = async (
       }
     }
 
-    const uniqueUsername = await findByUsername(username, tx);
-
+    // unique username verifications, username exists function
+    const uniqueUsername = await usernameExists(username, tx);
     if (uniqueUsername) {
       throw new UserError(`The username ${username} is not available`);
     }
@@ -88,12 +93,13 @@ export const registerUser = async (
     const newUser = await createUser(
       {
         avatar_id,
-        username,
         email,
         password_hash,
       },
       tx,
     );
+
+    await createProfile({ user_id: newUser.id, username }, tx);
 
     user = newUser;
     /**
@@ -160,7 +166,6 @@ export const registerUser = async (
 export const loginUser = async (credentials, user_agent, ip_address) => {
   // destructuring the data from credentials such as email and passoword
   const { email, password } = credentials;
-
   /**
    * Database transaction will be start from here, it is task like
    * find user based on email
@@ -184,15 +189,6 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 
     // throw error if the password is null,
     if (!_user.password_hash) {
-      // const oauth = await findOauthUserByUserID(_user.id, tx);
-
-      // if (oauth) {
-      //   return {
-      //     success: false,
-      //     code: "OAUTH_EXIST",
-      //   };
-      // }
-
       throw new UserError(`Account is already exists with ${email}`);
     } else {
       // camapare founded user password and received password from the user
@@ -213,8 +209,7 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
       };
     }
 
-    /**  Create a session using user details and refresh token
-     */
+    /**  Create a session using user details and refresh token */
     const { session, refreshToken } = await createSession(
       {
         user_id: _user.id,
@@ -223,12 +218,14 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
       },
       tx,
     );
+    
 
     /**
      * store _user detail into the userData variable,
      * later it used to send detail in email in this service
      */
-    userData = _user;
+    const profile = await findUnameById(_user.id, tx);
+    userData = { username: profile.username, ..._user};
 
     // prepare response and send forward
     return (response = {
@@ -269,4 +266,29 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
     accessToken,
     refreshToken: transaction.refreshToken,
   };
+};
+
+export const fetchUserData = async (uid) => {
+  const user = await prisma.$transaction(async (tx) => {
+    const user_data = await findById(uid, tx);
+
+    if (!user_data) {
+      return null;
+    }
+
+    const profile_data = await findProfileByUser(uid, tx);
+
+    const avatar_data = user_data.avatar_id
+      ? await findAvatarById(user_data.avatar_id, tx)
+      : null;
+
+    return {
+      email: user_data.email,
+      role: user_data.role,
+      imagePath: avatar_data ? avatar_data.image_path : null,
+      username: profile_data.username,
+    };
+  })
+
+  return user;
 };

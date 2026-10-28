@@ -18,13 +18,19 @@ export const findByEmail = async (email, db = prisma) => {
     },
     select: {
       id: true,
-      username: true,
       email: true,
       role: true,
-      password_hash: true,
+      password_hash: true
     },
   });
 };
+
+export const findUnameById = async (uid, db = prisma) => {
+  return await db.profile.findFirst({
+    where: { user_id: uid },
+    select: { username: true }
+  });
+}
 
 /** Find the user by its Username this is used to ensure that the username is same username will not store again,
  * into register controller and authenticate google user service  */
@@ -47,7 +53,6 @@ export const findById = async (id, db = prisma) => {
       id,
     },
     select: {
-      username: true,
       email: true,
       role: true,
       avatar_id: true,
@@ -72,6 +77,32 @@ export const createUser = async (payload, db = prisma) => {
     data: {
       ...payload,
     },
+  });
+};
+
+// Profile relation operations
+export const usernameExists = async (username, db = prisma) => {
+  const exists = await db.profile.findFirst({
+    where: { username },
+    select: { username: true },
+  });
+  return exists ? true : false;
+};
+
+// create a profile
+export const createProfile = async (payload, db = prisma) => {
+  return await db.profile.create({
+    data: {
+      ...payload,
+    },
+  });
+};
+
+// find profile by the ID
+export const findProfileByUser = async (user_id, db = prisma) => {
+  return await db.profile.findFirst({
+    where: { user_id },
+    select: { username: true },
   });
 };
 
