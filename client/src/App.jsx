@@ -15,6 +15,8 @@ import { useEffect } from "react";
 function App() {
   const { user, loading } = useAuth();
 
+  console.log(user)
+
   if (loading) {
     return <Loader message={"Fetching user data from server"} />;
   }

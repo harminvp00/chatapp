@@ -10,6 +10,7 @@ export default function AuthProvider({ children }) {
     try {
       const uri = `${import.meta.env.VITE_SERVER_URI}/auth/me`;
       const response = await api.get(uri, { withCredentials: true });
+      console.log(response?.data?.user)
       setUser(response.data.user);
     } catch (err) {
       setUser(null);

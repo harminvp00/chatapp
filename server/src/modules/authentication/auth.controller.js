@@ -244,11 +244,10 @@ export const fetchUser = async (req, res) => {
       throw new UserError("User is not exist!");
     }
 
-
     return res.status(200).json({
       success: true,
       message: "user fetched successfully",
-      currUser,
+      user: currUser,
     });
   } catch (error) {
     if (error instanceof UserError) {
