@@ -9,9 +9,9 @@ import {
   createUser,
   findByEmail,
   findOauthUserByUserID,
-  findByUsername,
   checkPasswordExist,
   findOauthUser,
+  usernameExists,
 } from "./auth.repo.js";
 import { TokenError, UserError } from "../../errors/auth.error.js";
 
@@ -107,7 +107,7 @@ export async function authenticateGoogleUser(
          * Case 2: User not exist when:
          * Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system
          */
-        const userNameExists = await findByUsername(googleUser.name, tx);
+        const userNameExists = await usernameExists(googleUser.name, tx);
 
         // verify that the username is unique for our systems.
         if (userNameExists) {

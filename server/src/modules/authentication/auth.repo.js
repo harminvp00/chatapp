@@ -32,19 +32,6 @@ export const findUnameById = async (uid, db = prisma) => {
   });
 }
 
-/** Find the user by its Username this is used to ensure that the username is same username will not store again,
- * into register controller and authenticate google user service  */
-export const findByUsername = async (username, db = prisma) => {
-  return await db.users.findFirst({
-    where: {
-      username,
-    },
-    select: {
-      id: true,
-      username: true,
-    },
-  });
-};
 
 /** find the user by its ID */
 export const findById = async (id, db = prisma) => {
