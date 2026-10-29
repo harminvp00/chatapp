@@ -1,17 +1,17 @@
 import prisma from "../../config/prisma.js";
 import {
+  checkPasswordExist,
   createAvatar,
-  createUser,
+  createProfile,
   createSession,
+  createUser,
+  findAvatarById,
   findByEmail,
   findById,
-  createProfile,
   findOauthUserByUserID,
   findProfileByUser,
-  checkPasswordExist,
+  findUnameById,
   usernameExists,
-  findAvatarById,
-  findUnameById
 } from "./auth.repo.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
