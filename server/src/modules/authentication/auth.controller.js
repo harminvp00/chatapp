@@ -2,10 +2,7 @@ import { _env } from "../../config/env.js";
 import crypto from "node:crypto";
 import prisma from "../../config/prisma.js";
 import {
-  findById,
-  findAvatarById,
   findSession,
-  findProfileByUser,
   updateSessionLastUsed,
   updateSessionRevoked,
 } from "./auth.repo.js";
