@@ -35,6 +35,7 @@ export const passwordRegister = async (req, res) => {
   try {
     const validation = registerValidation.safeParse(req.body);
 
+    // adding the validations 
     if (!validation.success) {
       res.status(400).json({
         success: false,
@@ -43,17 +44,15 @@ export const passwordRegister = async (req, res) => {
       return;
     }
 
-    // GET User Agent Details from the response
-    const rawUA = req.get("User-Agent");
-
     // calling register user service and geting repsonse from it! it could an error or tokens if new user created successfully
     const response = await registerUser(
       validation.data,
       req.file,
-      rawUA,
+      req.get("User-Agent"),
       req.ip,
     );
 
+    // verify the response success
     if (!response?.success) {
       if (response?.code === "OAUTH_EXIST") {
         return res.status(400).json({
@@ -63,6 +62,8 @@ export const passwordRegister = async (req, res) => {
         });
       }
     }
+
+    // destructuring the response 
     const { accessToken, refreshToken, ...rest } = response;
 
     return res

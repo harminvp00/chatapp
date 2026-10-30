@@ -36,10 +36,7 @@ export const Profile = () => {
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white px-6 py-3 outline-0 rounded-2xl cursor-pointer hover:opacity-60"
-        >
-          {" "}
-          logout{" "}
-        </button>
+        >logout</button>
       </div>
     </div>
   );
