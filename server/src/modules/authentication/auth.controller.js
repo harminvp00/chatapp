@@ -17,22 +17,25 @@ import {
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
 
+// cookies options
 const cookies_options = {
   httpOnly: true,
   secure: _env.node_env === "production",
   sameSite: _env.node_env === "production" ? "none" : "lax",
 };
 
+// google client 
 const googleClient = new OAuth2Client(
   _env.google_client_id,
   _env.google_client_secret,
   _env.google_callback_url,
 );
 
-export const register = async (req, res) => {
+export const passwordRegister = async (req, res) => {
   try {
     const validation = registerValidation.safeParse(req.body);
 
+    // adding the validations 
     if (!validation.success) {
       res.status(400).json({
         success: false,
@@ -41,17 +44,15 @@ export const register = async (req, res) => {
       return;
     }
 
-    // GET User Agent Details from the response
-    const rawUA = req.get("User-Agent");
-
     // calling register user service and geting repsonse from it! it could an error or tokens if new user created successfully
     const response = await registerUser(
       validation.data,
       req.file,
-      rawUA,
+      req.get("User-Agent"),
       req.ip,
     );
 
+    // verify the response success
     if (!response?.success) {
       if (response?.code === "OAUTH_EXIST") {
         return res.status(400).json({
@@ -61,6 +62,8 @@ export const register = async (req, res) => {
         });
       }
     }
+
+    // destructuring the response 
     const { accessToken, refreshToken, ...rest } = response;
 
     return res
@@ -101,7 +104,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const passowordLogin = async (req, res) => {
   try {
     /**
      * Validation: IF the validation success false then controller diretly send 400 error
@@ -270,6 +273,7 @@ export const getAvatar = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+  
   try {
     const refreshToken = req.cookies.refresh_token;
 
