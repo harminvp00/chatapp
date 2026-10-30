@@ -12,9 +12,9 @@ export const Profile = () => {
   }
 
   async function handleLogout() {
-    const logout = confirm("Are you want to logout from this account?");
+    const user_logout = confirm("Are you want to logout from this account?");
 
-    if (logout) {
+    if (user_logout) {
       await logout();
       navigateTo("/", { replace: true });
     }

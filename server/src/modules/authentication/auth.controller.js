@@ -17,19 +17,21 @@ import {
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
 
+// cookies options
 const cookies_options = {
   httpOnly: true,
   secure: _env.node_env === "production",
   sameSite: _env.node_env === "production" ? "none" : "lax",
 };
 
+// google client 
 const googleClient = new OAuth2Client(
   _env.google_client_id,
   _env.google_client_secret,
   _env.google_callback_url,
 );
 
-export const register = async (req, res) => {
+export const passwordRegister = async (req, res) => {
   try {
     const validation = registerValidation.safeParse(req.body);
 
@@ -101,7 +103,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const passowordLogin = async (req, res) => {
   try {
     /**
      * Validation: IF the validation success false then controller diretly send 400 error
@@ -270,6 +272,7 @@ export const getAvatar = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+  
   try {
     const refreshToken = req.cookies.refresh_token;
 
