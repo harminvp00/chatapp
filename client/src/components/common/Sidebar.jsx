@@ -55,7 +55,15 @@ export const Sidebar = () => {
           className="hover:opacity-50 cursor-pointer"
           title={user.username}
         >
-          <img className="w-8 h-8 rounded-full" src={(user.imagePath == "" || !user.imagePath) ? './default_avatar.jpeg' : user.imagePath} alt="" />
+          <img
+          className="w-8 h-8 rounded-full"
+          onError={(event)=> {
+            event.target.src = "/default_avatar.jpeg";
+          }}
+          src={user.imagePath || "/default_avatar.jpeg"}
+          alt={user.username}
+          title={user.username}
+        />
         </button>
       </div>
     </nav>
