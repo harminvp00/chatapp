@@ -5,6 +5,7 @@ import { api } from "../../config/axios.js";
 import {
   createGoogleAvatar,
   createOAuthAccount,
+  createProfile,
   createSession,
   createUser,
   findByEmail,
@@ -97,16 +98,13 @@ export async function authenticateGoogleUser(
         if (PasswordExit) {
           response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
         } else {
-          /**
-           * if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login
-           */
+          /* if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login */
           response = await loginGoogleOauthUser(userRow.id, googleUser.id, tx);
         }
       } else {
-        /**
-         * Case 2: User not exist when:
-         * Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system
-         */
+        /* Case 2: User not exist when: Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system */
+
+        console.log('totally new user created based to google data');
         const userNameExists = await usernameExists(googleUser.name, tx);
 
         // verify that the username is unique for our systems.
@@ -141,8 +139,15 @@ export async function authenticateGoogleUser(
           tx,
         );
 
-        await createProfile()
+        console.log('pass 1')
+        
+        await createProfile({
+          user_id: newUser.id, 
+          username: googleUser.name
+        }, tx);
 
+        
+        console.log('pass 2')
         // useful field id, email, name, picture
         const oauthUser = await createOAuthAccount(
           {
@@ -152,6 +157,9 @@ export async function authenticateGoogleUser(
           },
           tx,
         );
+
+        console.log('pass 3')
+
 
         /**
          * Store the newUser into the user variable,
@@ -177,6 +185,8 @@ export async function authenticateGoogleUser(
         tx,
       );
 
+        console.log('pass 4')
+
       return (response = {
         uid: response.uid,
         sid: session.id,
@@ -185,6 +195,7 @@ export async function authenticateGoogleUser(
       });
     });
 
+    console.log("\n\nThis is the transaction results: \n"+ transaction);
     // End of the transactions
     const { uid, sid, refreshToken, WhatsDone } = transaction;
 
