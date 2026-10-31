@@ -27,6 +27,9 @@ export const Profile = () => {
         {/* profile page  */}
         <img
           className="w-70 h-70 rounded-full my-2"
+          onError={(event)=> {
+            event.target.src = "/default_avatar.jpeg";
+          }}
           src={user.imagePath || "/default_avatar.jpeg"}
           alt={user.username}
           title={user.username}
