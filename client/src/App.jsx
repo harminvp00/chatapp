@@ -9,17 +9,15 @@ import { NotFound } from "./pages/NotFound.jsx";
 import { Loader } from "./components/common/Elements.jsx";
 import { OAtuhExist } from "./pages/auth/OAtuhExist.jsx";
 import { PasswordVerification } from "./pages/auth/PasswordVerification.jsx";
-import { useEffect } from "react";
 
 /* this App.jsx is main controller of this application, it contain all neccessary information about all function and routing structure */
 function App() {
   const { user, loading } = useAuth();
 
+  // loading screen enable conditions
   if (loading) {
     return <Loader message={"Fetching user data from server"} />;
   }
-
-  useEffect(() => {}, []);
 
   return (
     <div className="h-screen w-screen">

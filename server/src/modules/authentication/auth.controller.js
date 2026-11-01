@@ -356,7 +356,6 @@ export const googleCallback = async (req, res) => {
       req.ip,
     );
 
-    console.log(response)
 
     if (!response.success) {
       if (response?.code) {

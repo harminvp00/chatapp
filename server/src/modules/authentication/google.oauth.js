@@ -104,7 +104,6 @@ export async function authenticateGoogleUser(
       } else {
         /* Case 2: User not exist when: Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system */
 
-        console.log('totally new user created based to google data');
         const userNameExists = await usernameExists(googleUser.name, tx);
 
         // verify that the username is unique for our systems.
@@ -139,7 +138,6 @@ export async function authenticateGoogleUser(
           tx,
         );
 
-        console.log('pass 1')
         
         await createProfile({
           user_id: newUser.id, 
@@ -147,7 +145,6 @@ export async function authenticateGoogleUser(
         }, tx);
 
         
-        console.log('pass 2')
         // useful field id, email, name, picture
         const oauthUser = await createOAuthAccount(
           {
@@ -157,9 +154,6 @@ export async function authenticateGoogleUser(
           },
           tx,
         );
-
-        console.log('pass 3')
-
 
         /**
          * Store the newUser into the user variable,
@@ -185,7 +179,6 @@ export async function authenticateGoogleUser(
         tx,
       );
 
-        console.log('pass 4')
 
       return (response = {
         uid: response.uid,
@@ -195,7 +188,6 @@ export async function authenticateGoogleUser(
       });
     });
 
-    console.log("\n\nThis is the transaction results: \n"+ transaction);
     // End of the transactions
     const { uid, sid, refreshToken, WhatsDone } = transaction;
 

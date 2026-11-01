@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { ChatList } from "../chat/ChatList";
 import { Sidebar } from "../../components/common/Sidebar";
 export const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return <Loader message="Please waits 2 min while we fetching details" />;
@@ -15,10 +15,7 @@ export const Dashboard = () => {
 
       <div>
         <ChatList />
-
-        
-        hello
-
+        <h1 className="text-center"> Hello </h1>
       </div>
     </div>
   );
