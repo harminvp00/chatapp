@@ -11,7 +11,7 @@ export const OAtuhExist = () => {
   const navigate = useNavigate();
   const message = location.state?.message;
   
-  console.log(message)
+
   if(!message || message === undefined){  
     navigate('/', {replace: true});
   }

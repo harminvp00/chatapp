@@ -189,7 +189,10 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 
     // throw error if the password is null,
     if (!_user.password_hash) {
-      throw new UserError(`Account is already exists with ${email}`);
+
+      /* FUTURE CHANGES: Need to sent a OTP in email and if verification okay then password should be consider to save in user relation for future login and give access of the system to the user */
+
+      throw new UserError(`account does not have password to login`);
     } else {
       // camapare founded user password and received password from the user
       const matchPassword = await comparePassword(
@@ -218,14 +221,13 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
       },
       tx,
     );
-    
 
     /**
      * store _user detail into the userData variable,
      * later it used to send detail in email in this service
      */
     const profile = await findUnameById(_user.id, tx);
-    userData = { username: profile.username, ..._user};
+    userData = { username: profile.username, ..._user };
 
     // prepare response and send forward
     return (response = {
@@ -239,6 +241,7 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
   if (transaction?.code) {
     return { ...transaction };
   }
+
   // check for uid that tell us either user exists or not
   if (!transaction?.uid) {
     throw new UserError("User is not defined");
@@ -288,7 +291,7 @@ export const fetchUserData = async (uid) => {
       imagePath: avatar_data ? avatar_data.image_path : null,
       username: profile_data.username,
     };
-  })
+  });
 
   return user;
 };

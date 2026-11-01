@@ -1,7 +1,14 @@
+# vscode settings file
+.vscode
 
-
+# library framework files
 node_modules
+
+# environment crednetial file
 *.env
+
+# local data storage for the images 
 storage
-docs
-trace.txt
+
+# project decumentation and testing details
+docs 

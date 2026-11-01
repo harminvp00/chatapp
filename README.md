@@ -1,8 +1,16 @@
 ## ChatApp usign MERN
 
-I am Harmin Vekariya building this chat application as hobby to understand socket connetions and security in productions, Ill used to deploy and test to understand critical issues which can occur in a chat application made from NodeJS, I
+My name is Harmin Vekariya, I am building the chat app as hobby to understand socket connections and security layer in productions, also used ML or DL algorithms which run behiend the system, or social networks, Ill used this project to deploy and test to understand critical issues which can occur in a chat app when someone made it from scartch, I
 
-### Tech Stack
+### Directory abstract info:
+- **client** contains UI part like react code, tailwind, svgs, layouts, design of project user interface.
+- **server** this directory is used to handle API calls, communicate with database, security, services and authentication 
+- **db** directory refer to database schema, and it updates, the latest file also provided in this directory.
+- **excalidraw_charts** contain excalidraw representation of system pipelines, and UI.
+- **spam_detection** is part of machine learning implementation into this project to classify the message between spam (1) and ham (0).
+
+## Tech Stack
+
 **Frontend:**
 - **ReactJS** is frontend library
 - **Vite** is next gen high performance frontend build tool
