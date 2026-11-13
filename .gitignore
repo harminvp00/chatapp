@@ -9,6 +9,5 @@ node_modules
 
 # local data storage for the images 
 storage
-
-# project decumentation and testing details
-docs 
+*.txt
+main.js
