@@ -1,5 +1,9 @@
 import "dotenv/config";
 
+console.log(process.env)
+if (process.env) {
+  console.log('env is missing')
+}
 export const _env = {
   // app configurations 
   port: process.env.PORT,

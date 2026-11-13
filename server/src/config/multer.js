@@ -14,7 +14,6 @@ if (!fs.existsSync(avatarPath)) {
 
 // setup for destination, filename 
 const storage = multer.diskStorage({
-
   // destination folder path 
   destination: (req, file, cb) => {
     cb(null, avatarPath);
