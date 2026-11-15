@@ -1,7 +1,6 @@
 import "dotenv/config";
 
-console.log(process.env)
-if (process.env) {
+if (!process.env) {
   console.log('env is missing')
 }
 export const _env = {
@@ -30,4 +29,4 @@ export const _env = {
   google_client_secret: process.env.GOOGLE_CLIENT_SECRET,
   google_callback_url: process.env.GOOGLE_CALLBACK_URL,
   google_user: process.env.GOOGLE_USER,
-};
+};    

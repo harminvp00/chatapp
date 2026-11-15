@@ -273,7 +273,7 @@ export const getAvatar = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  
+
   try {
     const refreshToken = req.cookies.refresh_token;
 
@@ -367,7 +367,7 @@ export const googleCallback = async (req, res) => {
       }
       return res
         .status(302)
-        .redirect(`${_env.client_url}?message=${response.WhatsDone}`);
+        .redirect(`${_env.client_url}?message=${encodeURIComponent(response.message)}`);
     }
 
     const { tokens } = response;

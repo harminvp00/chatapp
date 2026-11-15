@@ -1,6 +1,4 @@
 
-
-
 const Needhelp = () => {
   return (
     <div className="bg-black/20 h-full flex flex-col justify-center items-center">

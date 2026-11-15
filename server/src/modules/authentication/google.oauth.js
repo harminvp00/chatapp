@@ -80,6 +80,7 @@ export async function authenticateGoogleUser(
       /**
        * check user is exist or not
        */
+
       const userRow = await findByEmail(googleUser.email, tx);
 
       let response = null,
@@ -96,10 +97,10 @@ export async function authenticateGoogleUser(
          * If password user is exist then we can link the password based account to the oauth acccount, and the user will able to login with one more ways, the google oauth will add.
          */
         if (PasswordExit) {
-          response = await linkOauthGoogle(userRow.id, googleUser.id, tx);
+          response = await linkOauthGoogle(userRow.id, googleUser.sub, tx);
         } else {
           /* if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login */
-          response = await loginGoogleOauthUser(userRow.id, googleUser.id, tx);
+          response = await loginGoogleOauthUser(userRow.id, googleUser.sub, tx);
         }
       } else {
         /* Case 2: User not exist when: Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system */
@@ -117,7 +118,7 @@ export async function authenticateGoogleUser(
         if (googleUser.picture) {
           const avatar = await createGoogleAvatar(
             {
-              file_name: `google-${googleUser.id}`,
+              file_name: `google-${googleUser.sub}`,
               image_path: `${googleUser.picture}`,
             },
             tx,
@@ -144,15 +145,23 @@ export async function authenticateGoogleUser(
           username: googleUser.name
         }, tx);
 
-        
+
+        console.log('done 1')
         // useful field id, email, name, picture
         const oauthUser = await createOAuthAccount(
           {
             user_id: newUser.id,
-            provider_id: googleUser.id,
+            provider_id: googleUser.sub,
             provider: "GOOGLE",
           },
           tx,
+        );
+
+        console.log('done 2')
+
+        console.log(
+          newUser,
+          oauthUser,
         );
 
         /**
