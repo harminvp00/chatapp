@@ -112,9 +112,7 @@ export async function authenticateGoogleUser(
           throw new UserError("Username is already exists");
         }
 
-        /**
-         * if picture is exist into the recived gogole user object that it will used as the avatar for our user
-         */
+        // if picture is exist into the recived gogole user object that it will used as the avatar for our user
         if (googleUser.picture) {
           const avatar = await createGoogleAvatar(
             {
@@ -126,9 +124,7 @@ export async function authenticateGoogleUser(
           avatar_id = avatar.id;
         }
 
-        /**
-         * Create a new User
-         */
+        // create new user in database
         const newUser = await createUser(
           {
             avatar_id: avatar_id,
@@ -139,14 +135,13 @@ export async function authenticateGoogleUser(
           tx,
         );
 
-        
+        // create a new profile in database which linked with user's id
         await createProfile({
           user_id: newUser.id, 
           username: googleUser.name
         }, tx);
 
 
-        console.log('done 1')
         // useful field id, email, name, picture
         const oauthUser = await createOAuthAccount(
           {
@@ -155,13 +150,6 @@ export async function authenticateGoogleUser(
             provider: "GOOGLE",
           },
           tx,
-        );
-
-        console.log('done 2')
-
-        console.log(
-          newUser,
-          oauthUser,
         );
 
         /**
@@ -232,7 +220,7 @@ export async function linkOauthGoogle(user_id, provider_id, tx) {
 
   const linked_oauth = await createOAuthAccount(
     {
-      user_id,
+      user_id, 
       provider: "GOOGLE",
       provider_id,
     },
