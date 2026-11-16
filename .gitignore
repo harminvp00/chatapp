@@ -9,5 +9,3 @@ node_modules
 
 # local data storage for the images 
 storage
-*.txt
-main.js

@@ -176,7 +176,6 @@ export async function authenticateGoogleUser(
         tx,
       );
 
-
       return (response = {
         uid: response.uid,
         sid: session.id,

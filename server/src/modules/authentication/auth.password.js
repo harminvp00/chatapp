@@ -192,7 +192,7 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 
       /* FUTURE CHANGES: Need to sent a OTP in email and if verification okay then password should be consider to save in user relation for future login and give access of the system to the user */
 
-      throw new UserError(`account does not have password to login`);
+      throw new UserError(`user is already exists.`);
     } else {
       // camapare founded user password and received password from the user
       const matchPassword = await comparePassword(

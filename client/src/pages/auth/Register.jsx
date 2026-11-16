@@ -159,7 +159,7 @@ export const Register = () => {
           >
             {/* img element to display the profile image of user  */}
             <img
-              className={`${profilePreview ? "w-full h-full border-2 border-blue-500" : ""} rounded-full`}
+              className={`${profilePreview ? "w-full h-full border-2 border-blue-500 object-cover" : ""} rounded-full`}
               src={profilePreview ? profilePreview : camera_svg}
               alt="profile_picture"
               title="add profile picture"
