@@ -10,8 +10,7 @@ import prisma from "./src/config/prisma.js";
 // server routes
 import routes from "./src/routes/index.js";
 import { _env } from "./src/config/env.js";
-import { success } from "zod";
-
+import { limiter  } from "./src/middlewares/rate.limit.js";
 // instances of plugins
 const app = express();
 
@@ -20,29 +19,27 @@ startApp(app);
 
 // middleware (application level)
 app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  }),
+  cors({}),
 );
 app.use(cookieParser());
 app.use(express.json());
+app.use(limiter);
 
-app.use("/redirect", (req, res) => {
-  res
-    .status(302)
-    .cookie("name", "harmin")
-    .cookie("age", 21)
-    .redirect(_env.client_url + "/register");
-});
+// app.use("/redirect", (req, res) => {
+//   res
+//     .status(302)
+//     .cookie("name", "harmin")
+//     .cookie("age", 21)
+//     .redirect(_env.client_url + "/register");
+// });
+
 // status routes
 app.get("/", (req, res) => {
   const rawUA = req.get("user-agent");
   res.send(rawUA);
 });
 
-// service routes
+// applications routes
 app.use(routes);
 
 app.use((req, res) => {
