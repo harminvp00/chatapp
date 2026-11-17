@@ -99,7 +99,7 @@ CREATE TABLE messages(
     id BIGSERIAL PRIMARY KEY,
     conversation_id BIGINT NOT NULL,
     sender_id BIGINT NOT NULL,
-    ciphertext TEXT NOT NULL,
+    ciphertext BYTEA NOT NULL,
     message_type message_types DEFAULT 'TEXT',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NULL,
@@ -111,6 +111,12 @@ CREATE TABLE messages(
         FOREIGN KEY (sender_id)
         REFERENCES users(id)
 );
+
+CREATE INDEX idx_message_conversation_id 
+ON message(conversation_id);
+
+CREATE INDEX idx_message_sender_id 
+ON message(sender_id);
 
 CREATE INDEX idx_sessions_user_id
 ON sessions(user_id);
