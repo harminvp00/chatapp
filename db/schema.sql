@@ -112,6 +112,12 @@ CREATE TABLE messages(
         REFERENCES users(id)
 );
 
+CREATE INDEX idx_message_conversation_id 
+ON message(conversation_id);
+
+CREATE INDEX idx_message_sender_id 
+ON message(sender_id);
+
 CREATE INDEX idx_sessions_user_id
 ON sessions(user_id);
 
