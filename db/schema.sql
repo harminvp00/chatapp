@@ -1,6 +1,5 @@
 
-
-
+-- enums 
 CREATE TYPE user_roles AS ENUM (
     'USER',
     'ADMIN'

@@ -10,7 +10,7 @@ import prisma from "./src/config/prisma.js";
 // server routes
 import routes from "./src/routes/index.js";
 import { _env } from "./src/config/env.js";
-import { limiter  } from "./src/middlewares/rate.limit.js";
+import { limiter } from "./src/middlewares/rate.limit.js";
 // instances of plugins
 const app = express();
 
@@ -19,7 +19,10 @@ startApp(app);
 
 // middleware (application level)
 app.use(
-  cors({}),
+  cors({
+    origin: "http://localhost:5173/",
+    credentials: true,
+  })
 );
 app.use(cookieParser());
 app.use(express.json());
