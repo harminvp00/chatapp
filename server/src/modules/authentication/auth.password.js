@@ -286,6 +286,7 @@ export const fetchUserData = async (uid) => {
       : null;
 
     return {
+      user_id: user_data.id.toString(), 
       email: user_data.email,
       role: user_data.role,
       imagePath: avatar_data ? avatar_data.image_path : null,

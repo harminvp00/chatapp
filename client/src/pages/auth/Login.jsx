@@ -1,14 +1,14 @@
 import api from "../../api/api.js";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import googleIcon from "../../assets/bussiness/google.png";
-import error_svg from "../../assets/status/error.svg";
+import googleIcon from "../../assets/google.png";
+import error_svg from "../../assets/error.svg";
 import {
   AuthButton,
   Loader,
   Title,
 } from "../../components/common/Elements.jsx";
-import close from "../../assets/app/close.svg";
+import close from "../../assets/close.svg";
 import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons.jsx";
 import { useEffect } from "react";
 import { Logo } from "../../components/common/Logo.jsx";

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../../components/common/Logo";
-import visibility from "../../assets/crud/visibility.svg";
+import visibility from "../../assets/visibility.svg";
 import { useState } from "react";
 import { Loader } from "../../components/common/Elements";
 import api from "../../api/api.js";

@@ -5,11 +5,11 @@ import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // images .png/,svg
-import camera_svg from "../../assets/app/camera.svg";
-import edit_uploaded_image from "../../assets/crud/edit.svg";
-import error_svg from "../../assets/status/error.svg";
-import remove_uploaded_image from "../../assets/crud/delete.svg";
-import close from "../../assets/app/close.svg";
+import camera_svg from "../../assets/camera.svg";
+import edit_uploaded_image from "../../assets/edit.svg";
+import error_svg from "../../assets/error.svg";
+import remove_uploaded_image from "../../assets/delete.svg";
+import close from "../../assets/close.svg";
 import { Logo } from "../../components/common/Logo.jsx";
 
 // UI elements
