@@ -40,6 +40,7 @@ export const findById = async (id, db = prisma) => {
       id,
     },
     select: {
+      id: true,
       email: true,
       role: true,
       avatar_id: true,

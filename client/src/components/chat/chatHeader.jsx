@@ -1,5 +1,5 @@
 
-import test_profile_img from '../../assets/dummy/test3.jpeg'
+import test_profile_img from '../../assets/test3.jpeg'
 
 import { CloseSVG } from '../../assets/svgs/SVGs.jsx';
 
