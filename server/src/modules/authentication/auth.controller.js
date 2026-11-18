@@ -16,6 +16,7 @@ import {
   PasswordError,
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
+import { createToken } from "../../config/jwt.js";
 
 // cookies options
 const cookies_options = {
@@ -96,7 +97,6 @@ export const passwordRegister = async (req, res) => {
       return;
     }
 
-    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,
