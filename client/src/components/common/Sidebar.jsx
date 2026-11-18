@@ -22,7 +22,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <nav className="w-fit h-screen py-5 px-4 flex flex-col items-center justify-start gap-2 bg-blue-500 text-white">
+    <nav className="w-full py-5 px-4 flex items-center justify-start gap-2 bg-blue-500 text-white">
       {/* Chat Icon */}
       <button type="button" className="hover:opacity-50" onClick={null}>
         <ChatSVG fill={"#f5f5f5"} />
@@ -38,7 +38,7 @@ export const Sidebar = () => {
         <SettingSVG fill={"#f5f5f5"} />
       </button>
 
-      <div className="flex-1 flex flex-col items-center justify-end gap-2">
+      <div className="flex-1 flex items-center justify-end gap-2">
         <button
           type="button"
           className="hover:opacity-50 cursor-pointer"

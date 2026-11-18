@@ -101,6 +101,7 @@ export async function authenticateGoogleUser(
         } else {
           /* if the user dont have password and user exist that means the oauth account is created using this mail only, acccount is not password based, so we can directly give login to oauth account after verify the provider id and provider name, Note: user able to add password from profile after login */
           response = await loginGoogleOauthUser(userRow.id, googleUser.sub, tx);
+          console.log(response)
         }
       } else {
         /* Case 2: User not exist when: Now we confirm that this user is not exist in our system ever so we can simply follow below instruction to create this user in our system */

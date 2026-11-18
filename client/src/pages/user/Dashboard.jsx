@@ -10,13 +10,13 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="h-screen flex">
+    <div className="flex flex-col">
       <Sidebar />
 
-      <div>
-        <ChatList />
-        <h1 className="text-center"> Hello </h1>
+      <div className="w-full">
+ 	      <ChatList/>	
       </div>
+
     </div>
   );
 };
