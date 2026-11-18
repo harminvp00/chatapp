@@ -37,13 +37,16 @@ model messages {
   id              BigInt         @id @default(autoincrement())
   conversation_id BigInt
   sender_id       BigInt
-  ciphertext      String
+  ciphertext      Bytes
   message_type    message_types? @default(TEXT)
   created_at      DateTime?      @default(now()) @db.Timestamptz(6)
   updated_at      DateTime?      @db.Timestamptz(6)
   deleted_at      DateTime?      @db.Timestamptz(6)
   conversations   conversations  @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_message_conversation")
   users           users          @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_message_sender")
+
+  @@index([conversation_id], map: "idx_message_conversation_id")
+  @@index([sender_id], map: "idx_message_sender_id")
 }
 
 model oauth_accounts {
