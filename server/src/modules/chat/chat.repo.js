@@ -16,3 +16,21 @@ export async function addConversationMember(payload, db = prisma) {
         data: payload
     })
 }
+
+// list all available user from the database
+export async function listUsers(id, db = prisma) {
+    return await db.users.findMany({
+        select: {
+            id: true,
+            profile: {
+                select: {
+                    username: true
+                }
+            }, avatars: {
+                select: {
+                    image_path: true
+                }
+            }
+        }
+    });
+}
