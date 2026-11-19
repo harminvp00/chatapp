@@ -1,13 +1,16 @@
 
 
-
+import AuthMiddleware from "../../middlewares/AuthMiddleware.js";
 import { Router } from 'express';
 import {
-    createConversation
+    createConversation,
+    listUserController
 } from './chat.controller.js';
 
 
 const router = Router();
-router.post("/conversation/create", createConversation);
+router
+    .get('/user/list', AuthMiddleware, listUserController)
+    .post("/conversation/create", createConversation);
 
 export default router;

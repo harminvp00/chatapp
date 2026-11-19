@@ -1,7 +1,17 @@
 
+import { bigint } from "zod";
 import prisma from "../../config/prisma.js";
-import { createNewConversation,  addConversationMember } from "./chat.repo.js";
+import { createNewConversation, addConversationMember, listUsers } from "./chat.repo.js";
 
+
+export const list_users = async (uid) => {
+
+    const u_list = await prisma.$transaction(async (tx) => {
+        return await listUsers(uid, tx);
+    });
+
+    return JSON.stringify(u_list, (_, v) => typeof v === 'bigint' ? v.toString() : v);
+}
 
 export const create_conversation = async (payload) => {
     const { sender_id } = payload;
@@ -15,7 +25,6 @@ export const create_conversation = async (payload) => {
         return members;
     });
 
-    console.log("Done")
 
     if (transaction) {
         return {
