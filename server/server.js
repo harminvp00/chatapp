@@ -1,5 +1,8 @@
 // plugins
 import express from "express";
+import { Server } from 'socket.io';
+import { createServer } from "http";
+
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -13,9 +16,16 @@ import { _env } from "./src/config/env.js";
 import { limiter } from "./src/middlewares/rate.limit.js";
 // instances of plugins
 const app = express();
+const server = createServer(app);
+const io = new Server(server);
 
 // application server
 startApp(app);
+
+io.on("connection", (socket) => {
+  console.log('hello, User connected:::', socket.id);
+  socket.emit('welcome', "welcome to the quickchat;s server room")
+});
 
 // middleware (application level)
 app.use(
@@ -24,6 +34,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(limiter);

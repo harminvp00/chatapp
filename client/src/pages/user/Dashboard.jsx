@@ -1,4 +1,5 @@
 
+import { io } from 'socket.io-client';
 import api from "../../api/api.js";
 import { Loader } from "../../components/common/Elements";
 import { useAuth } from "../../context/AuthContext";
@@ -7,9 +8,12 @@ import { ChatHeader } from "../../components/chat/chatHeader.jsx";
 import chat_bg_image from "../../assets/chatscreen-bg.jpg"
 import { useState } from "react";
 import { useEffect } from "react";
+import { useMemo } from 'react';
 
 export const Dashboard = () => {
-  // states 
+  
+  const socket = useMemo(() => io(import.meta.VITE_SERVER_URI), [])
+  // states
   const { user, loading } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [userInChat, setUserInChat] = useState(null);
@@ -17,8 +21,22 @@ export const Dashboard = () => {
 
   // effects 
   useEffect(() => {
+    // this is for handle fetching friends from users
     handleFetchFriend();
+
+    // socket event of connection with server
+    socket.on("connect", () => {
+      console.log('connected with the id ', socket.id)
+    });
+
+    socket.on('welcome', (msg) => {
+      console.log(msg)
+    })
+
+    // socket.on('welcome', )
+
   }, []);
+
 
   // loader condition
   if (loading) {
