@@ -11,10 +11,11 @@ import { useEffect } from "react";
 import { useMemo } from 'react';
 
 export const Dashboard = () => {
-  
+
   const socket = useMemo(() => io("http://localhost:3000"), [])
   // states
   const { user, loading } = useAuth();
+  const [socketID, setSocketID] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [userInChat, setUserInChat] = useState(null);
   const [friends, setFriends] = useState([]);
@@ -23,7 +24,8 @@ export const Dashboard = () => {
 
   function connectToSocket() {
     socket.on('conenction', () => {
-      console.log("Connected:: "+ socket.id)
+      setSocketID(socket.id);
+      console.log("Connected:: " + socketID)
     });
 
     socket.emit("welcome", "hello from harmin")
@@ -35,9 +37,6 @@ export const Dashboard = () => {
     handleFetchFriend();
     connectToSocket();
   }, []);
-
-  
-
 
   // loader condition
   if (loading) {
@@ -54,16 +53,7 @@ export const Dashboard = () => {
     })
   }
 
-  // handle open conversation 
-  const handleConversation = async () => {
-    const response = await api.post('chat/conversation/create', {
-      sender_id: user.user_id
-    });
-    const data = response?.data;
-    if (!response.success) {
-      console.log(data.message)
-    }
-  }
+ 
 
   // handle fetch friends
   const handleFetchFriend = async () => {
@@ -78,12 +68,29 @@ export const Dashboard = () => {
       <div className="w-90">
         {/* top navigation for profile, setting, notification and logout  */}
         <Navbar />
-        
 
-        <div className="text-xl">
+        <div className="">
           {
             friends.length === 0 ?
-              <span className="text-center"> You did not have any friends yet </span> :
+              <div className='flex flex-col items-center justify-center h-50 bg-[#f5f5f5]'>
+               
+                {/* user intruction  */}
+                <p className="text-center"> You did not have any friends yet </p>
+
+                {/* button for the find friends  */}
+                <button
+                  onClick={null}
+                  className='bg-blue-500 text-white py-2 px-4 rounded-2xl my-2  hover:cursor-pointer'
+                  onMouseEnter={ele => {
+                    ele.target.style.filter = "brightness(90%)";
+                    ele.target.style.fontWeight = 'bold';
+                  }}
+                  onMouseLeave={ele => {
+                    ele.target.style.filter = "brightness(100%)"
+                    ele.target.style.fontWeight = 'normal';
+                  }}
+                > find friends? </button>
+              </div> :
               <>
                 {
                   friends.map((obj, index) => {

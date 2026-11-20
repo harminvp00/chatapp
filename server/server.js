@@ -44,7 +44,7 @@ const io = new Server(server, {
 startApp(server);
 
 io.on("connection", (socket) => {
-  console.log('hello, User connected:::', socket.id);
+  console.log('User connected:::', socket.id);
 
   socket.on('welcome', (msg) => {
     console.log(msg)
@@ -55,14 +55,6 @@ io.on("connection", (socket) => {
 app.use(cookieParser());
 app.use(express.json());
 app.use(limiter);
-
-// app.use("/redirect", (req, res) => {
-//   res
-//     .status(302)
-//     .cookie("name", "harmin")
-//     .cookie("age", 21)
-//     .redirect(_env.client_url + "/register");
-// });
 
 // status routes
 app.get("/", (req, res) => {
