@@ -1,4 +1,4 @@
-import { create_conversation, list_users } from "./chat.service.js"
+import { list_users } from "./chat.service.js"
 
 
 // for list the user in database 
@@ -20,26 +20,3 @@ export const listUserController = async (req, res) => {
         })
     }
 }
-
-// for create a new conversation with the users, 
-export const createConversation = async (req, res) => {
-    try {
-        const response = await create_conversation(req.body);
-        if (!response.success) {
-            return res.status(400).json({
-                success: false,
-                message: "response was not success"
-            });
-        }
-        return res.status(201).json({
-            success: true,
-            message: "conversation is created."
-        })
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message
-        })
-    }
-}
-

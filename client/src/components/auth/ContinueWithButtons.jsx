@@ -2,7 +2,6 @@
 
 // Button for the OAuth feature 
 export const ContinueWithButtons = ({ providerIcon, provider, endPoint }) => {
-
   return (
     <button
       className="w-[90%] cursor-pointer rounded-xl mt-2 mx-10 p-2 not-even:border-0 outline-0 flex  items-center justify-center gap-3 bg-black/5 hover:opacity-75"

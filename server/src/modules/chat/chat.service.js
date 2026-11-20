@@ -1,13 +1,12 @@
 
-import { bigint } from "zod";
 import prisma from "../../config/prisma.js";
-import { createNewConversation, addConversationMember, listUsers } from "./chat.repo.js";
+import { listUsers } from "./chat.repo.js";
 
 
 export const list_users = async (uid) => {
 
     const u_list = await prisma.$transaction(async (tx) => {
-        return await listUsers(uid, tx);
+        return await listUsers([], tx);
     });
 
     return JSON.stringify(u_list, (_, v) => typeof v === 'bigint' ? v.toString() : v);
