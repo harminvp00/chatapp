@@ -14,27 +14,44 @@ import prisma from "./src/config/prisma.js";
 import routes from "./src/routes/index.js";
 import { _env } from "./src/config/env.js";
 import { limiter } from "./src/middlewares/rate.limit.js";
-// instances of plugins
+
+// instances for server/websockets
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
-
-// application server
-startApp(app);
-
-io.on("connection", (socket) => {
-  console.log('hello, User connected:::', socket.id);
-  socket.emit('welcome', "welcome to the quickchat;s server room")
-});
-
-// middleware (application level)
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173"
+    ],
+    methods: ['GET', 'POST'],
     credentials: true,
   })
 );
 
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173"
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  }
+});
+
+// application server
+startApp(server);
+
+io.on("connection", (socket) => {
+  console.log('hello, User connected:::', socket.id);
+
+  socket.on('welcome', (msg) => {
+    console.log(msg)
+  })
+});
+
+// other middlewares 
 app.use(cookieParser());
 app.use(express.json());
 app.use(limiter);

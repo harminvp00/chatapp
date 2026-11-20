@@ -12,30 +12,31 @@ import { useMemo } from 'react';
 
 export const Dashboard = () => {
   
-  const socket = useMemo(() => io(import.meta.VITE_SERVER_URI), [])
+  const socket = useMemo(() => io("http://localhost:3000"), [])
   // states
   const { user, loading } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [userInChat, setUserInChat] = useState(null);
   const [friends, setFriends] = useState([]);
 
+
+
+  function connectToSocket() {
+    socket.on('conenction', () => {
+      console.log("Connected:: "+ socket.id)
+    });
+
+    socket.emit("welcome", "hello from harmin")
+  }
+
   // effects 
   useEffect(() => {
     // this is for handle fetching friends from users
     handleFetchFriend();
-
-    // socket event of connection with server
-    socket.on("connect", () => {
-      console.log('connected with the id ', socket.id)
-    });
-
-    socket.on('welcome', (msg) => {
-      console.log(msg)
-    })
-
-    // socket.on('welcome', )
-
+    connectToSocket();
   }, []);
+
+  
 
 
   // loader condition
@@ -74,7 +75,7 @@ export const Dashboard = () => {
   return (
     <div className="flex">
       {/* chat controls and list  */}
-      <div className="w-150">
+      <div className="w-90">
         {/* top navigation for profile, setting, notification and logout  */}
         <Navbar />
         

@@ -1,6 +1,6 @@
 
 
-import { CloseSVG } from '../../assets/svgs/SVGs.jsx';
+import { CloseSVG, SettingSVG } from '../../assets/svgs/SVGs.jsx';
 
 export function ChatHeader({ setUserInChat, setChatOpen, picture ="default_avatar.jpeg", username="user" }) {
 
@@ -17,7 +17,7 @@ export function ChatHeader({ setUserInChat, setChatOpen, picture ="default_avata
             <img className='w-8 h-8 rounded-full' src={picture} alt="" />
             <span> {username} </span>
             <div className='flex-1 flex justify-end'>
-                <span> settings </span>
+                <SettingSVG/>
             </div>
         </header>
     )
