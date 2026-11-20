@@ -1,4 +1,6 @@
-export const ChatSVG = ({ fill, callMethod = null }) => {
+
+
+export const ChatSVG = ({ fill = "#000", callMethod = null }) => {
   return (
     <svg
       onClick={callMethod}
@@ -13,16 +15,17 @@ export const ChatSVG = ({ fill, callMethod = null }) => {
   );
 };
 
-export const CloseSVG = ({ fill="#000000", callMethod = null }) => {
+export const CloseSVG = ({ fill = "#000000", callMethod = null }) => {
   return (
     <svg className="hover:cursor-pointer hover:opacity-75" onClick={callMethod} xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill={fill} ><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>
   )
 }
 
 
-export const NotificationSVG = ({ fill, callMethod = null }) => {
+export const NotificationSVG = ({ fill = "#000", callMethod = null }) => {
   return (
     <svg
+      onClick={callMethod}
       xmlns="http://www.w3.org/2000/svg"
       height="24px"
       viewBox="0 -960 960 960"
@@ -34,9 +37,10 @@ export const NotificationSVG = ({ fill, callMethod = null }) => {
   );
 };
 
-export const LogoutSVG = ({ fill, callMethod = null }) => {
+export const LogoutSVG = ({ fill = "#000", callMethod = null }) => {
   return (
     <svg
+      onClick={callMethod}
       xmlns="http://www.w3.org/2000/svg"
       height="24px"
       viewBox="0 -960 960 960"
@@ -48,9 +52,11 @@ export const LogoutSVG = ({ fill, callMethod = null }) => {
   );
 };
 
-export const SettingSVG = ({ fill, callMethod = null }) => {
+export const SettingSVG = ({ fill = "#000", callMethod = null }) => {
   return (
     <svg
+      className="hover:cursor-pointer hover:opacity-75"
+      onClick={callMethod}
       xmlns="http://www.w3.org/2000/svg"
       height="24px"
       viewBox="0 -960 960 960"

@@ -1,13 +1,13 @@
 import { _env } from "./config/env.js";
 
-export default function startApp(app) {
-  if (!app) {
-    throw new Error("App is not connected");
+export default function startserver(server) {
+  if (!server) {
+    throw new Error("server is not connected");
   }
 
   const PORT = _env.port || 3000;
 
-  app.listen(PORT, () => {
-    console.log(`App is running on http://localhost:${PORT}`);
+  server.listen(PORT, () => {
+    console.log(`server is running on http://localhost:${PORT}`);
   });
 }

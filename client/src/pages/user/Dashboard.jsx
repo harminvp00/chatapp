@@ -1,4 +1,5 @@
 
+import { io } from 'socket.io-client';
 import api from "../../api/api.js";
 import { Loader } from "../../components/common/Elements";
 import { useAuth } from "../../context/AuthContext";
@@ -7,18 +8,36 @@ import { ChatHeader } from "../../components/chat/chatHeader.jsx";
 import chat_bg_image from "../../assets/chatscreen-bg.jpg"
 import { useState } from "react";
 import { useEffect } from "react";
+import { useMemo } from 'react';
 
 export const Dashboard = () => {
-  // states 
+  
+  const socket = useMemo(() => io("http://localhost:3000"), [])
+  // states
   const { user, loading } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [userInChat, setUserInChat] = useState(null);
   const [friends, setFriends] = useState([]);
 
+
+
+  function connectToSocket() {
+    socket.on('conenction', () => {
+      console.log("Connected:: "+ socket.id)
+    });
+
+    socket.emit("welcome", "hello from harmin")
+  }
+
   // effects 
   useEffect(() => {
+    // this is for handle fetching friends from users
     handleFetchFriend();
+    connectToSocket();
   }, []);
+
+  
+
 
   // loader condition
   if (loading) {
@@ -56,7 +75,7 @@ export const Dashboard = () => {
   return (
     <div className="flex">
       {/* chat controls and list  */}
-      <div className="w-150">
+      <div className="w-90">
         {/* top navigation for profile, setting, notification and logout  */}
         <Navbar />
         
