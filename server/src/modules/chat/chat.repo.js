@@ -41,6 +41,26 @@ export async function findConversation(payload, db = prisma) {
 
 }
 
+// find many user record where the username is matched
+export async function findByUsername(matchString, db = prisma) {
+    return await db.profile.findMany({
+        where: {
+            username: {
+                contains: matchString
+            }
+        },
+        select: {
+            username: true,
+            users: {
+                select: {
+                    id: true,
+                    avatars: { select: { image_path: true } }
+                }
+            },
+        }
+    })
+}
+
 // list all available user from the database
 export async function listUsers(IDs, conversation_id, db = prisma) {
     return await db.conversation_members.findMany({

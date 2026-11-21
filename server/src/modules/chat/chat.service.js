@@ -1,6 +1,13 @@
 
+import { success } from "zod";
 import prisma from "../../config/prisma.js";
-import { listUsers } from "./chat.repo.js";
+import {
+    createConversation,
+    fetchConversations,
+    findConversation,
+    findByUsername,
+    listUsers,
+} from "./chat.repo.js";
 
 
 export const list_users = async (uid) => {
@@ -12,30 +19,25 @@ export const list_users = async (uid) => {
     return JSON.stringify(u_list, (_, v) => typeof v === 'bigint' ? v.toString() : v);
 }
 
-export const create_conversation = async (payload) => {
-    const { sender_id } = payload;
 
+export const searchForUsername = async (username) => {
+    
+    const results = await prisma.$transaction(async (tx) => {
+        const usersList = await findByUsername(username, tx);
+        return JSON.stringify(usersList, (_, val)=> typeof val === 'bigint' ? val.toString() : val);
+    })
 
-    const transaction = await prisma.$transaction(async (trsnx) => {
-        const conversation = await createNewConversation(trsnx);
-
-        const members = await addConversationMember({ conversation_id: conversation.id, user_id: sender_id }, trsnx);
-
-        return members;
-    });
-
-
-    if (transaction) {
+    if (!results) {
         return {
-            success: true,
-            message: 'successfully created a conversation',
-            data: transaction
+            success: false,
+            message: "Trouble in fecthing user from the db."
         }
     }
 
     return {
-        success: false,
-        message: "failed to create a conversation",
-        data: null
+        success: true,
+        message: "fetched users successfully",
+        results: JSON.parse(results)
     }
+
 }
