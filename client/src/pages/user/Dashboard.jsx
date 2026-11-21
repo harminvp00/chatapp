@@ -50,8 +50,6 @@ export const Dashboard = () => {
 
   // effects 
   useEffect(() => {
-    // this is for handle fetching friends from users
-    handleFetchFriend();
     connectToSocket();
   }, []);
 
@@ -69,13 +67,7 @@ export const Dashboard = () => {
       image
     })
   }
-
-  // handle fetch friends
-  const handleFetchFriend = async () => {
-    const _friends = await api.get("/chat/user/list");
-    setFriends(_friends?.data?.users);
-  }
-
+  
   // this functional component return this XML code 
   return (
     <div className="flex">
