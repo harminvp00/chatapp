@@ -43,13 +43,13 @@ const io = new Server(server, {
 // application server
 startApp(server);
 
-io.on("connection", (socket) => {
-  console.log('User connected:::', socket.id);
+// io.on("connection", (socket) => {
+//   console.log('User connected:::', socket.id);
 
-  socket.on('welcome', (msg) => {
-    console.log(msg)
-  })
-});
+//   socket.on('welcome', (msg) => {
+//     console.log(msg)
+//   })
+// });
 
 // other middlewares 
 app.use(cookieParser());

@@ -10,25 +10,62 @@ import prisma from "../../config/prisma.js";
     4. Common Use Cases: List All Users, List User based on IDS or other filter
 */
 
-// list all available user from the database
-export async function listUsers(IDs, db = prisma) {
-    return await db.users.findMany({
+// For create a new conversation 
+export async function createConversation(db = prisma) {
+    return await db.conversations.create({
+        data: {},
+        select: { id: true }
+    })
+}
+
+// Get all conversation in a specific user is member and have access to it
+export async function fetchConversations(user_id, db = prisma) {
+    return await db.conversation_members.findMany({
+        where: { user_id },
+        select: { conversation_id: true }
+    })
+}
+
+// For find existing conversation betweem two users
+export async function findConversation(payload, db = prisma) {
+    return await db.conversation_members.findMany({
         where: {
-            id: {
-                in: IDs
-            }
+            user_id: { in: payload.IDs },
+            conversation_id: { equals: payload.convId }
         },
         select: {
-            id: true,
-            profile: {
-                select: {
-                    username: true
-                }
-            }, avatars: {
-                select: {
-                    image_path: true
-                }
-            }
+            conversation_id: true,
+            user_id: true
         }
     });
+
+}
+
+// list all available user from the database
+export async function listUsers(IDs, conversation_id, db = prisma) {
+    return await db.conversation_members.findMany({
+        where: {
+            AND: [
+                { user_id: { in: IDs } },
+                { conversation_id }
+            ]
+        }, include: {
+            users: {
+                select: {
+                    id: true,
+                    email: true,
+                    avatars: {
+                        select: {
+                            image_path: true
+                        }
+                    },
+                    profile: {
+                        select: {
+                            username: true
+                        }
+                    }
+                },
+            }
+        }
+    })
 }

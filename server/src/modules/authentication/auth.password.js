@@ -13,6 +13,7 @@ import {
   findUnameById,
   usernameExists,
 } from "./auth.repo.js";
+import { fetchConversations } from "../chat/chat.repo.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
 import { createToken } from "../../config/jwt.js";
@@ -285,12 +286,17 @@ export const fetchUserData = async (uid) => {
       ? await findAvatarById(user_data.avatar_id, tx)
       : null;
 
+    const conversations = await fetchConversations(user_data.id, tx);
+
     return {
-      user_id: user_data.id.toString(), 
+      user_id: user_data.id.toString(),
       email: user_data.email,
       role: user_data.role,
       imagePath: avatar_data ? avatar_data.image_path : null,
       username: profile_data.username,
+      conversations: Array.from(conversations.map(element => {
+        return element.conversation_id.toString()
+      }))
     };
   });
 
