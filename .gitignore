@@ -9,3 +9,6 @@ node_modules
 
 # local data storage for the images 
 storage
+
+# list of some pre-written cmd to execute as need
+cmd.txt
