@@ -7,7 +7,7 @@ My name is Harmin Vekariya, I am building the chat app as hobby to understand so
 - **server** this directory is used to handle API calls, communicate with database, security, services and authentication 
 - **db** directory refer to database schema, and it updates, the latest file also provided in this directory.
 - **excalidraw_charts** contain excalidraw representation of system pipelines, and UI.
-- **spam_detection** is part of machine learning implementation into this project to classify the message between spam (1) and ham (0).
+- **spam_detection** is part of machine learning, that will be implemented into this project to classify the message between spam (1) and ham (0).
 
 ## Tech Stack
 
@@ -26,9 +26,7 @@ My name is Harmin Vekariya, I am building the chat app as hobby to understand so
 - **PrismaORM** (v6) is used like a bridge between the Postgres and NodeJS, because JavaScript mostly like to deal within Objects and that what prisma do, it's convert the relation data to objects amd allow to do operation on them.
 
 **Predicted Addition for the future in this Project:**
-1. **Machiene Learning (Logistic Regression)** will be used in this project for classify the spam messages, alerting user about unusual messages,
-2. **NLP (Natural Language Processing):** a chatbot will used for communicate with user, in most cases is usecase will inform the new features, event, and guide users in software for thier technical issues.
-3. **Computer Vision**: will be used to scan uploaded image on the chatapp, that classify appropriate content vs non-appropriate content, (non-appropriate refer to the adult content here)
+Not Implemented Yet 
 
 ### Current Database Structure (v2)
 - **user** (id, email, hash_pass etc)
@@ -37,6 +35,8 @@ My name is Harmin Vekariya, I am building the chat app as hobby to understand so
     - oauth_accounts (provider, provider id, etc)
     - avatars (id, file name, path etc)
     - sessions (id, validity, expiry etc)
+- **conversations** (id, createAt, updateAt)
+    - conversation_members (id, user_id, convresation_id)
 
 all relations are linked within the users relation (user_id field).
 
