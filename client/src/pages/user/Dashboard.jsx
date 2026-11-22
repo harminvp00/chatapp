@@ -31,6 +31,13 @@ export const Dashboard = () => {
     setSWUsername(event.target.value);
   }
 
+  function resetStates() {
+    setSWUsername("");
+    OpenSearchUsersWindow(false);
+    setUserListAfterSearch([]);
+    setEnableUserListView(false);
+  }
+
   async function handleFetchUserList() {
     const response = await api.get(`/chat/user/search/${swUsername}`);
 
@@ -130,7 +137,10 @@ export const Dashboard = () => {
 
               <div className='w-full flex items-center bg-[#f5f5f5] shadow px-2'>
 
-                <button onClick={() => { OpenSearchUsersWindow(false) }} className='rounded-full hover:cursor-pointer'>
+                <button onClick={() => {
+                  OpenSearchUsersWindow(false)
+                  resetStates()
+                }} className='rounded-full hover:cursor-pointer'>
                   <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f" ><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>
                 </button>
 
@@ -157,7 +167,9 @@ export const Dashboard = () => {
                         <>
                           {
                             userListAfterSearch.map((ele, index) => {
-                              return <div className='flex items-center gap-2 px-5 py-4' key={`user-${index}`}>
+                              return <div onClick={() => {
+                                handleOpenChat(ele?.username, ele?.users?.avatars?.image_path)
+                              }} className='flex items-center gap-2 px-5 py-4' key={`user-${index}`}>
                                 <img className='w-10 h-10 rounded-full bg-cover shadow' src={ele.users.avatars.image_path} alt="" />
                                 <span> {ele.username} <b> {user.user_id == ele.users.id ? "(You)" : ""}</b>  </span>
                               </div>
