@@ -1,22 +1,41 @@
 
-import { success } from "zod";
 import prisma from "../../config/prisma.js";
 import {
-    createConversation,
+    _createConversation,
     fetchConversations,
     findConversation,
     findByUsername,
-    listUsers,
+    fetchFriends,
 } from "./chat.repo.js";
 
 
-export const list_users = async (uid) => {
+/**
+ * find if the conversation already exists
+ * if the conversation does not exist between users, then create new one
+ * update clients
+ */
+export const createConversation = async (paylaod) => {
+    // find for existing conversations
+    const conversations = await findConversation();
 
-    const u_list = await prisma.$transaction(async (tx) => {
-        return await listUsers([], tx);
+    if (conversations) {
+        // use this existing conversation
+    }
+    else[
+        // create a new conversation here
+    ]
+} 
+
+export const getFriends = async (uid) => {
+
+    const transaction = await prisma.$transaction(async (tx)=>{
+        const conversation = await fetchConversations(uid, tx)
+        const conversation_ids = conversation.map(ele => { return ele.conversation_id });
+        const friends = await fetchFriends(uid, conversation_ids, tx);
+        return friends;
     });
 
-    return JSON.stringify(u_list, (_, v) => typeof v === 'bigint' ? v.toString() : v);
+    return JSON.stringify(transaction, (_, v) => typeof v === 'bigint' ? v.toString() : v);
 }
 
 
