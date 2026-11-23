@@ -1,17 +1,18 @@
 
-import { bigint } from "zod";
 import prisma from "../../config/prisma.js";
 
 /* 
-    Chat Repository file abstract:
+    chat.repo.js file's abstract (details):
     1. Used Database relations into this files are Users, Conversations, Conversations_member, Messages
     2. Performed Operations: Create/Read/Update/Delete on All relations
     3. Filters: not implemented yet 
     4. Common Use Cases: List All Users, List User based on IDS or other filter
+
+    Note: repository function are start with _, and service function start without _, this is for making similarity within repository methods and service method relation
 */
 
 // For create a new conversation 
-export async function createConversation(db = prisma) {
+export async function _createConversation(db = prisma) {
     return await db.conversations.create({
         data: {},
         select: { id: true }
@@ -26,7 +27,35 @@ export async function fetchConversations(user_id, db = prisma) {
     })
 }
 
+// Get All Friend from the database
+export async function fetchFriends(user_id, conversation_ids = [], db = prisma) {
+    return await db.conversation_members.findMany({
+        where: {
+            user_id: {
+                not: user_id,
+            },
+            conversation_id: {
+                in: conversation_ids
+            }
+        }, select: {
+            users: {
+                select: {
+                    id: true,
+                    avatars: { select: { image_path: true } },
+                    profile: { select: { username: true } },
+                }
+            }
+        }
+    })
+}
+
 // For find existing conversation betweem two users
+/**
+ * 
+ * @param {*} payload[0] is an array of users ID, payload[1] is conversation IDs
+ * @param {*} db is a prisma instance
+ * @returns the array of object, each object have one key conversation_id 
+ */
 export async function findConversation(payload, db = prisma) {
     return await db.conversation_members.findMany({
         where: {
@@ -38,7 +67,6 @@ export async function findConversation(payload, db = prisma) {
             user_id: true
         }
     });
-
 }
 
 // find many user record where the username is matched
@@ -61,31 +89,31 @@ export async function findByUsername(matchString, db = prisma) {
     })
 }
 
-// list all available user from the database
-export async function listUsers(IDs, conversation_id, db = prisma) {
-    return await db.conversation_members.findMany({
-        where: {
-            AND: [
-                { user_id: { in: IDs } },
-                { conversation_id }
-            ]
-        }, include: {
-            users: {
-                select: {
-                    id: true,
-                    email: true,
-                    avatars: {
-                        select: {
-                            image_path: true
-                        }
-                    },
-                    profile: {
-                        select: {
-                            username: true
-                        }
-                    }
-                },
-            }
-        }
-    })
-}
+// // list all available user from the database
+// export async function fetchFriends(user_id, conversation_ids = [], db = prisma) {
+//     return await db.conversation_members.findMany({
+//         where: {
+//             AND: [
+//                 { user_id: { in: user_ids } },
+//                 { conversation_id: { in: conversation_ids } }
+//             ]
+//         }, include: {
+//             users: {
+//                 select: {
+//                     id: true,
+//                     email: true,
+//                     avatars: {
+//                         select: {
+//                             image_path: true
+//                         }
+//                     },
+//                     profile: {
+//                         select: {
+//                             username: true
+//                         }
+//                     }
+//                 },
+//             }
+//         }
+//     })
+// }

@@ -38,6 +38,12 @@ export const Dashboard = () => {
     setEnableUserListView(false);
   }
 
+
+  async function getAllFriends() {
+    const response = await api.get('/chat/user/friends');
+    setFriends(response?.data?.users)
+  }
+
   async function handleFetchUserList() {
     const response = await api.get(`/chat/user/search/${swUsername}`);
 
@@ -58,6 +64,7 @@ export const Dashboard = () => {
   // effects 
   useEffect(() => {
     connectToSocket();
+    getAllFriends();
   }, []);
 
   // loader condition
@@ -116,10 +123,15 @@ export const Dashboard = () => {
                         if (obj.id === user.user_id) {
                           return null;
                         }
+                        console.log(
+                          obj.users?.id,
+                          obj?.users?.profile?.username,
+                          obj?.users?.avatars?.image_path
+                        )
                         return (
-                          <li onClick={() => { handleOpenChat(obj?.profile?.username, obj?.avatars?.image_path) }} key={`friend-${index}`} className="border-b flex items-center gap-5 px-10 py-2 hover:cursor-pointer">
-                            <img className="w-12 h-12 border rounded-full shadow bg-cover" src={`${obj?.avatars?.image_path}`} alt={`avatar-${index}`} />
-                            <span> {obj?.profile?.username} </span>
+                          <li onClick={() => { handleOpenChat(obj?.users?.profile?.username, obj?.users?.avatars?.image_path) }} key={`friend-${index}`} className="border-b flex items-center gap-5 px-10 py-2 hover:cursor-pointer">
+                            <img className="w-12 h-12 border rounded-full shadow bg-cover" src={`${obj?.users?.avatars?.image_path}`} alt={`avatar-${index}`} />
+                            <span> {obj?.users?.profile?.username} </span>
                           </li>
                         )
                       })
@@ -169,7 +181,7 @@ export const Dashboard = () => {
                             userListAfterSearch.map((ele, index) => {
                               return <div onClick={() => {
                                 handleOpenChat(ele?.username, ele?.users?.avatars?.image_path)
-                              }} className='flex items-center gap-2 px-5 py-4' key={`user-${index}`}>
+                              }} className='flex items-center gap-2 px-5 py-4 hover:bg-[#f5f5f5] hover:cursor-pointer' key={`user-${index}`}>
                                 <img className='w-10 h-10 rounded-full bg-cover shadow' src={ele.users.avatars.image_path} alt="" />
                                 <span> {ele.username} <b> {user.user_id == ele.users.id ? "(You)" : ""}</b>  </span>
                               </div>
