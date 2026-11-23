@@ -1,7 +1,4 @@
 
-
-import { CloseSVG, SettingSVG } from '../../assets/svgs/SVGs.jsx';
-
 export function ChatHeader({ setUserInChat, setChatOpen, picture ="default_avatar.jpeg", username="user" }) {
 
     function handleChatClose() {
@@ -12,7 +9,9 @@ export function ChatHeader({ setUserInChat, setChatOpen, picture ="default_avata
 
     return (
         <header className='flex items-center gap-3 p-3 bg-[#f5f5f5] '>
-            <CloseSVG fill={"#000"} callMethod={handleChatClose} />
+            
+            <svg className="hover:cursor-pointer hover:opacity-75" onClick={handleChatClose} xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill={"#010101"} ><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg>
+
             <img className='w-8 h-8 rounded-full' src={picture} alt="" />
             <span> {username} </span>
             <div className='flex-1 flex justify-end'>

@@ -26,7 +26,7 @@ export const Dashboard = () => {
   const [searchUserWindow, OpenSearchUsersWindow] = useState(false);
   const [userListAfterSearch, setUserListAfterSearch] = useState([]);
   const [enableUserListView, setEnableUserListView] = useState(false);
-  
+
   function handleSetSWUsername(event) {
     setSWUsername(event.target.value);
   }
@@ -38,7 +38,6 @@ export const Dashboard = () => {
     setEnableUserListView(false);
   }
 
-
   async function getAllFriends() {
     const response = await api.get('/chat/user/friends');
     setFriends(response?.data?.users)
@@ -46,8 +45,6 @@ export const Dashboard = () => {
 
   async function handleFetchUserList() {
     const response = await api.get(`/chat/user/search/${swUsername}`);
-
-    console.log(response?.data?.results)
     setEnableUserListView(true);
     setUserListAfterSearch(response?.data?.results);
   }
@@ -81,7 +78,7 @@ export const Dashboard = () => {
       image
     })
   }
-  
+
   // this functional component return this XML code 
   return (
     <div className="flex">
@@ -90,7 +87,7 @@ export const Dashboard = () => {
         !searchUserWindow ?
           <div className="w-90">
             {/* top navigation for profile, setting, notification and logout  */}
-            <Navbar />
+            <Navbar searchUserWindow={searchUserWindow} OpenSearchUsersWindow={OpenSearchUsersWindow} />
 
             <div className="">
               {
@@ -119,19 +116,22 @@ export const Dashboard = () => {
                   </div> :
                   <>
                     {
-                      friends.map((obj, index) => {
-                        if (obj.id === user.user_id) {
-                          return null;
-                        }
-                        console.log(
-                          obj.users?.id,
-                          obj?.users?.profile?.username,
-                          obj?.users?.avatars?.image_path
-                        )
+                      friends.map((ele, index) => {
                         return (
-                          <li onClick={() => { handleOpenChat(obj?.users?.profile?.username, obj?.users?.avatars?.image_path) }} key={`friend-${index}`} className="border-b flex items-center gap-5 px-10 py-2 hover:cursor-pointer">
-                            <img className="w-12 h-12 border rounded-full shadow bg-cover" src={`${obj?.users?.avatars?.image_path}`} alt={`avatar-${index}`} />
-                            <span> {obj?.users?.profile?.username} </span>
+                          // One User info
+                          <li
+                            onClick={() => { handleOpenChat(ele?.users?.profile?.username, ele?.users?.avatars?.image_path) }}
+                            key={`friend-${ele?.users?.id}`}
+                            className="border-b flex items-center gap-5 px-10 py-2 hover:cursor-pointer">
+                            <img
+                              className="w-12 h-12 border rounded-full shadow bg-cover"
+                              onError={(event) => {
+                                event.target.src = "/default_avatar.jpeg";
+                              }}
+                              src={ele.users?.avatars?.image_path || "/default_avatar.jpeg"}
+                              alt={ele.users?.profile?.username} />
+
+                            <span> {ele?.users?.profile?.username} </span>
                           </li>
                         )
                       })
@@ -142,7 +142,10 @@ export const Dashboard = () => {
           </div>
           :
           <div className='w-90'>
-            <Navbar />
+            <Navbar
+              searchUserWindow={searchUserWindow}
+              OpenSearchUsersWindow={OpenSearchUsersWindow}
+              />
             {/* Container for the input and its result list of user */}
             <div style={{ height: `calc(100vh - 56px)` }}
               className='w-full flex flex-col'>
@@ -175,18 +178,31 @@ export const Dashboard = () => {
                   <div>
                     {
                       userListAfterSearch.length == 0 ?
-                        <p className='px-1 py-4 text-center'> No records are found, <br/> who contain "{swUsername}" in username </p> :
+                        <p className='px-1 py-4 text-center'> No records are found, <br /> who contain "{swUsername}" in username </p> :
                         <>
                           {
                             userListAfterSearch.map((ele, index) => {
-                              return <div onClick={() => {
-                                handleOpenChat(ele?.username, ele?.users?.avatars?.image_path)
-                              }} className='flex items-center gap-2 px-5 py-4 hover:bg-[#f5f5f5] hover:cursor-pointer' key={`user-${index}`}>
-                                <img className='w-10 h-10 rounded-full bg-cover shadow' src={ele.users.avatars.image_path} alt="" />
-                                <span> {ele.username} <b> {user.user_id == ele.users.id ? "(You)" : ""}</b>  </span>
-                              </div>
+                              return (
+
+                                // detail of one user 
+                                <div onClick={() => {
+                                  handleOpenChat(ele?.username, ele?.users?.avatars?.image_path)
+                                }} className='flex items-center gap-2 px-5 py-4 hover:bg-[#f5f5f5] hover:cursor-pointer' key={`user-${index}`}>
+
+                                  {/* profile image  */}
+                                  <img className='w-10 h-10 rounded-full bg-cover shadow'
+                                    onError={(event) => {
+                                      event.target.src = "/default_avatar.jpeg";
+                                    }}
+                                    src={ele.users?.avatars?.image_path || "/default_avatar.jpeg"}
+                                    alt={ele.users?.profile?.username} />
+
+                                  {/* username  */}
+                                  <span> {ele.username} <b> {user.user_id == ele.users.id ? "(You)" : ""}</b>  </span>
+                                </div>
+                              )
                             })
-                          }                         
+                          }
                         </>
                     }
                   </div>
@@ -197,7 +213,7 @@ export const Dashboard = () => {
       }
 
       {/* chat screen part  */}
-      <div className="flex-1 border -l">
+      <div className="flex-1 border-l">
         {
           !chatOpen ?
             <div className="h-screen bg-[#f5f5f5] opacity-90 flex flex-col items-center justify-center">
