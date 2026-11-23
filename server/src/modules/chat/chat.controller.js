@@ -1,11 +1,12 @@
 
-import { list_users, searchForUsername } from "./chat.service.js"
+import { success } from "zod";
+import { createConversation, getFriends, searchForUsername } from "./chat.service.js"
 
 
 // for list the user in database 
-export const listUserController = async (req, res) => {
+export const getFriendsController = async (req, res) => {
     try {
-        const users = await list_users(req.user.uid);
+        const users = await getFriends(req.user.uid);
         if (!users) {
             throw new Error("Unable to list the users from database.")
         }
@@ -51,4 +52,30 @@ export const searchUsersController = async (req, res) => {
             message: error.message
         })
      }
+}
+
+
+export const createConversationController = async (req, res) => {
+    
+    try {
+        if (!req.body) {
+            return res.status(404).json({
+                success: false,
+                message: "One of the two field is missing, [senderID, receiverID]"
+            })
+        }
+
+        const response = await createConversation(req.body);
+
+        if (!response.success) {
+            return res.status(400).json(response);
+        }
+
+        return res.status(201).json(response);
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        })
+    }
 }
