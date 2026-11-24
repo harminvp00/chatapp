@@ -11,9 +11,10 @@ import {
   findOauthUserByUserID,
   findProfileByUser,
   findUnameById,
+  getUser,
   usernameExists,
 } from "./auth.repo.js";
-import { fetchConversations } from "../chat/chat.repo.js";
+import { fetchConversations, fetchFriends } from "../chat/chat.repo.js";
 import { registerEmail, loginEmail } from "../../utils/emails/auth.email.js";
 import { comparePassword, hashPassword } from "../../config/bcrypt.js";
 import { createToken } from "../../config/jwt.js";
@@ -273,32 +274,27 @@ export const loginUser = async (credentials, user_agent, ip_address) => {
 };
 
 export const fetchUserData = async (uid) => {
+
+  // Transcation for fetch user data based on ID 
   const user = await prisma.$transaction(async (tx) => {
-    const user_data = await findById(uid, tx);
-
-    if (!user_data) {
-      return null;
-    }
-
-    const profile_data = await findProfileByUser(uid, tx);
-
-    const avatar_data = user_data.avatar_id
-      ? await findAvatarById(user_data.avatar_id, tx)
-      : null;
-
-    const conversations = await fetchConversations(user_data.id, tx);
-
+    const _user = await getUser(uid);
+    const conversations = await fetchConversations(_user.id, tx);
+    const friends = await fetchFriends(
+      _user.id,
+      conversations.map(ele => ele.conversation_id.toString()),
+      tx
+    );
     return {
-      user_id: user_data.id.toString(),
-      email: user_data.email,
-      role: user_data.role,
-      imagePath: avatar_data ? avatar_data.image_path : null,
-      username: profile_data.username,
-      conversations: Array.from(conversations.map(element => {
-        return element.conversation_id.toString()
-      }))
-    };
-  });
+      ..._user,
+      friends: friends
+    }
+  })
 
-  return user;
+  // condition for no user response 
+  if (!user) return null;
+
+  // return user 
+  return JSON.parse(JSON.stringify(user, (_, val) => {
+    return typeof val === 'bigint' ? val.toString() : val
+  }))
 };
