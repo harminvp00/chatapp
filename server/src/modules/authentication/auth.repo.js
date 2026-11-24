@@ -10,6 +10,40 @@ import createRefreshToken from "../../utils/refresh_token.js";
 
 // Retrival Operations
 
+/* Get User repo function to fetch full user details */
+export const getUser = async (id, db = prisma) => {
+  return await db.users.findFirst({
+    where: {
+      id: id
+    }, select: {
+      id: true,
+      email: true,
+      role: true,
+      avatars: {
+        select: {
+          file_name: true,
+          image_path: true
+        }
+      },
+      profile: {
+        where: {
+          user_id: id,
+        },
+        select: {
+          bio: true,
+          birthday: true,
+          home_address: true,
+          gender: true,
+          phone: true,
+          prefer_language: true,
+          username: true
+        }
+      }
+    }
+  });
+
+}
+
 /** Find the user By it Email address  */
 export const findByEmail = async (email, db = prisma) => {
   return await db.users.findFirst({

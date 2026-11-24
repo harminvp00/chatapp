@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export const Navbar = ({ searchUserWindow, OpenSearchUsersWindow }) => {
   const { user, logout } = useAuth();
+
   const navigateTo = useNavigate();
 
   const handleLogoutUser = async () => {
@@ -15,6 +16,8 @@ export const Navbar = ({ searchUserWindow, OpenSearchUsersWindow }) => {
       navigateTo("/", { replace: true });
     }
   };
+
+  console.log(user)
 
   return (
     <nav className="w-full p-3 flex items-center justify-start gap-2 bg-blue-500 text-white">
@@ -35,16 +38,16 @@ export const Navbar = ({ searchUserWindow, OpenSearchUsersWindow }) => {
           }}
           type="button"
           className="hover:opacity-50 cursor-pointer"
-          title={user.username}
+          title={user?.profile?.username || "User"}
         >
           <img
             className="w-8 h-8 rounded-full"
             onError={(event) => {
               event.target.src = "/default_avatar.jpeg";
             }}
-            src={user.imagePath || "/default_avatar.jpeg"}
-            alt={user.username}
-            title={user.username}
+            src={user?.avatars?.image_path || "/default_avatar.jpeg"}
+            alt={user?.avatars?.file_name || "User"}
+            title={user?.profile?.username || "'User"}
           />
         </button>
 

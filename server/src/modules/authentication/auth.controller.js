@@ -238,7 +238,7 @@ export const fetchUser = async (req, res) => {
     // only carries { uid, sid } — not email — so look the user up by id.
     const { uid, sid } = req.user;
 
-    const currUser = await fetchUserData(uid);
+    const currUser = await fetchUserData(req?.user?.uid);
 
     if (!currUser) {
       throw new UserError("User is not exist!");

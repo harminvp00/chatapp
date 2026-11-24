@@ -18,7 +18,7 @@ export const Dashboard = () => {
   const [socketID, setSocketID] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [userInChat, setUserInChat] = useState(null);
-  const [friends, setFriends] = useState([]);
+  const [friends, setFriends] = useState(user?.friends);
 
 
   // state for searchUserWindow 
@@ -26,6 +26,11 @@ export const Dashboard = () => {
   const [searchUserWindow, OpenSearchUsersWindow] = useState(false);
   const [userListAfterSearch, setUserListAfterSearch] = useState([]);
   const [enableUserListView, setEnableUserListView] = useState(false);
+
+  // effects 
+  useEffect(() => {
+    connectToSocket();
+  }, []);
 
   function handleSetSWUsername(event) {
     setSWUsername(event.target.value);
@@ -36,11 +41,6 @@ export const Dashboard = () => {
     OpenSearchUsersWindow(false);
     setUserListAfterSearch([]);
     setEnableUserListView(false);
-  }
-
-  async function getAllFriends() {
-    const response = await api.get('/chat/user/friends');
-    setFriends(response?.data?.users)
   }
 
   async function handleFetchUserList() {
@@ -57,12 +57,6 @@ export const Dashboard = () => {
 
     socket.emit("welcome", "hello from harmin")
   }
-
-  // effects 
-  useEffect(() => {
-    connectToSocket();
-    getAllFriends();
-  }, []);
 
   // loader condition
   if (loading) {
