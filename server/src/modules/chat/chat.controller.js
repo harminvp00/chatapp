@@ -58,7 +58,7 @@ export const searchUsersController = async (req, res) => {
 export const createConversationController = async (req, res) => {
     
     try {
-        if (!req.body) {
+        if (!req.body.member1 || !req.body.member2) {
             return res.status(404).json({
                 success: false,
                 message: "One of the two field is missing, [senderID, receiverID]"
@@ -69,7 +69,7 @@ export const createConversationController = async (req, res) => {
 
         if (!response.success) {
             return res.status(400).json(response);
-        }
+        }   
 
         return res.status(201).json(response);
     } catch (error) {

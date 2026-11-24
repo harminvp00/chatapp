@@ -3,9 +3,10 @@ import prisma from "../../config/prisma.js";
 import {
     _createConversation,
     fetchConversations,
-    findConversation,
     findByUsername,
     fetchFriends,
+    fetchUserWithConversation,
+    addMemberToConversation,
 } from "./chat.repo.js";
 
 
@@ -14,21 +15,49 @@ import {
  * if the conversation does not exist between users, then create new one
  * update clients
  */
-export const createConversation = async (paylaod) => {
-    // find for existing conversations
-    const conversations = await findConversation();
+export const createConversation = async (payload) => {
 
-    if (conversations) {
-        // use this existing conversation
-    }
-    else[
-        // create a new conversation here
-    ]
-} 
+    // payload = { member1: '9', member2: '11', conversations_ids: ['151'] }
+
+    // extract members id from payload (req.body) Note member 1 is user account from where this request comes 
+    const { member1, member2, conversations_ids } = payload;
+
+    // find for existing conversations
+    const conversation = await prisma.$transaction(async (tx) => {
+
+        // get a list of all users who are involve with user in any conversations 
+        const usersWithConversations = await fetchUserWithConversation(member1, conversations_ids, tx);
+
+        // only keep IDs into the array 
+        const userList = usersWithConversations.map(ele => ele.user_id);
+
+        // verify that with whom we are starting a new conversation, does he involve in conversation with same user
+        if (userList.includes(member2)) {
+            return {
+                success: true,
+                message: 'conversation exist already between both users'
+            }
+        }
+
+        // creating new conversation 
+        const newConversation = await _createConversation(tx);
+        await addMemberToConversation({
+            member1, member2, conv_id: newConversation.id
+        }, tx)
+
+        // return new conversation message
+        return {
+            success: true,
+            message: 'new conversation is created',
+        }
+    })
+
+    return conversation;
+}
 
 export const getFriends = async (uid) => {
 
-    const transaction = await prisma.$transaction(async (tx)=>{
+    const transaction = await prisma.$transaction(async (tx) => {
         const conversation = await fetchConversations(uid, tx)
         const conversation_ids = conversation.map(ele => { return ele.conversation_id });
         const friends = await fetchFriends(uid, conversation_ids, tx);
@@ -40,10 +69,10 @@ export const getFriends = async (uid) => {
 
 
 export const searchForUsername = async (username) => {
-    
+
     const results = await prisma.$transaction(async (tx) => {
         const usersList = await findByUsername(username, tx);
-        return JSON.stringify(usersList, (_, val)=> typeof val === 'bigint' ? val.toString() : val);
+        return JSON.stringify(usersList, (_, val) => typeof val === 'bigint' ? val.toString() : val);
     })
 
     if (!results) {

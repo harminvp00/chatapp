@@ -38,7 +38,15 @@ export const getUser = async (id, db = prisma) => {
           prefer_language: true,
           username: true
         }
-      }
+      },
+      conversation_members: {
+        where: {
+          user_id: id
+        }, 
+        select: {
+          conversation_id: true,
+        }
+      },
     }
   });
 

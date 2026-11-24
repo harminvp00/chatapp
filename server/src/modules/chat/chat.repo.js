@@ -19,11 +19,37 @@ export async function _createConversation(db = prisma) {
     })
 }
 
+export async function addMemberToConversation(payload, db = prisma) {
+    return await db.conversation_members.createMany({
+        data: [
+            { user_id: payload.member1, conversation_id: payload.conv_id },
+            { user_id: payload.member2, conversation_id: payload.conv_id },
+        ]
+    });
+}
+
 // Get all conversation in a specific user is member and have access to it
 export async function fetchConversations(user_id, db = prisma) {
     return await db.conversation_members.findMany({
         where: { user_id },
         select: { conversation_id: true }
+    })
+}
+
+export async function fetchUserWithConversation(user_id, conversation_ids = [], db = prisma) {
+
+    return await db.conversation_members.findMany({
+        where: {
+            user_id: {
+                not: user_id,
+            },
+            conversation_id: {
+                in: conversation_ids
+            }
+        },
+        select: {
+            user_id: true
+        }
     })
 }
 
@@ -49,26 +75,6 @@ export async function fetchFriends(user_id, conversation_ids = [], db = prisma) 
     })
 }
 
-// For find existing conversation betweem two users
-/**
- * 
- * @param {*} payload[0] is an array of users ID, payload[1] is conversation IDs
- * @param {*} db is a prisma instance
- * @returns the array of object, each object have one key conversation_id 
- */
-export async function findConversation(payload, db = prisma) {
-    return await db.conversation_members.findMany({
-        where: {
-            user_id: { in: payload.IDs },
-            conversation_id: { equals: payload.convId }
-        },
-        select: {
-            conversation_id: true,
-            user_id: true
-        }
-    });
-}
-
 // find many user record where the username is matched
 export async function findByUsername(matchString, db = prisma) {
     return await db.profile.findMany({
@@ -88,32 +94,3 @@ export async function findByUsername(matchString, db = prisma) {
         }
     })
 }
-
-// // list all available user from the database
-// export async function fetchFriends(user_id, conversation_ids = [], db = prisma) {
-//     return await db.conversation_members.findMany({
-//         where: {
-//             AND: [
-//                 { user_id: { in: user_ids } },
-//                 { conversation_id: { in: conversation_ids } }
-//             ]
-//         }, include: {
-//             users: {
-//                 select: {
-//                     id: true,
-//                     email: true,
-//                     avatars: {
-//                         select: {
-//                             image_path: true
-//                         }
-//                     },
-//                     profile: {
-//                         select: {
-//                             username: true
-//                         }
-//                     }
-//                 },
-//             }
-//         }
-//     })
-// }
