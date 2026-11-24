@@ -17,7 +17,6 @@ export const Navbar = ({ searchUserWindow, OpenSearchUsersWindow }) => {
     }
   };
 
-  console.log(user)
 
   return (
     <nav className="w-full p-3 flex items-center justify-start gap-2 bg-blue-500 text-white">
