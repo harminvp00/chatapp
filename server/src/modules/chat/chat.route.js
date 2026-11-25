@@ -12,9 +12,7 @@ import {
 const router = Router();
 router
     .get('/user/friends', AuthMiddleware, getFriendsController)
-    .get('/user/search/:username',AuthMiddleware, searchUsersController)
-
-    // Not fully implemeneted yet 
-    .post('/user/conversation/create', createConversationController)
-
+    .get('/user/search/:username', AuthMiddleware, searchUsersController)
+    .post('/user/conversation/create', AuthMiddleware, createConversationController)
+    
 export default router;

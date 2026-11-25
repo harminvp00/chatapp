@@ -1,4 +1,3 @@
-
 export function ChatHeader({ setUserInChat, setChatOpen, picture ="default_avatar.jpeg", username="user" }) {
 
     function handleChatClose() {

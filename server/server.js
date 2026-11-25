@@ -13,7 +13,7 @@ import prisma from "./src/config/prisma.js";
 // server routes
 import routes from "./src/routes/index.js";
 import { _env } from "./src/config/env.js";
-import { limiter } from "./src/middlewares/rate.limit.js";
+import { limiter } from "./src/middlewares/RateLimit.js";
 
 // instances for server/websockets
 const app = express();
@@ -42,14 +42,6 @@ const io = new Server(server, {
 
 // application server
 startApp(server);
-
-// io.on("connection", (socket) => {
-//   console.log('User connected:::', socket.id);
-
-//   socket.on('welcome', (msg) => {
-//     console.log(msg)
-//   })
-// });
 
 // other middlewares 
 app.use(cookieParser());
