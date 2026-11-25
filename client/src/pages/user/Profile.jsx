@@ -6,12 +6,11 @@ import { useNavigate } from "react-router-dom";
 
 import { ProfileHeader } from "../../components/user/ProfileHeader.jsx";
 import { ProfilePicture } from "../../components/user/ProfilePicture.jsx";
+import { ProfileDetails } from "../../components/user/ProfileDetails.jsx";
 
-// this is profile page of quickchat service
 export const Profile = () => {
   const { user, loading, logout } = useAuth();
 
-  console.log(user)
   const navigateTo = useNavigate();
 
   if (loading) {
@@ -28,9 +27,10 @@ export const Profile = () => {
   }
 
   return (
-    <div className="h-screen bg-[#FFFFFF]">
+    <div className="w-full h-screen bg-[#FFFFFF]">
       <ProfileHeader />
       <ProfilePicture />
+      <ProfileDetails/>
     </div>
   );
 };
