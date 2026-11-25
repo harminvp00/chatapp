@@ -10,7 +10,7 @@ export const AuthButton = ({ btnTitle }) => {
   return (
     <button
       type="submit"
-      className="bg-blue-500 text-xl w-[90%] text-white font-bold cursor-pointer rounded-xl mt-2 mx-10 p-4 not-even:border-0 outline-0"
+      className="bg-blue-500 w-[90%] text-white font-bold cursor-pointer rounded-xl mt-2 mx-10 p-4 not-even:border-0 outline-0"
     >
       {btnTitle}
     </button>

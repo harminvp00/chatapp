@@ -1,6 +1,6 @@
 
 import { ChatScreenHeader } from "./ChatScreenHeader.jsx";
-import chat_bg_image from "../../assets/chatscreen-bg.jpg"
+import chat_bg_image from '../../assets/chatscreen-bg.png'
 
 export const ChatScreen = ({ userInChat, setUserInChat, chatOpen, setChatOpen }) => {
 

@@ -3,7 +3,7 @@ import { ContinueWithButtons } from "../../components/auth/ContinueWithButtons";
 import google from "/google.png";
 import github from "/github.png";
 import gmail from "/gmail.png";
-import { Logo } from "../../components/common/Logo";
+import { Logo } from "../../components/common/Logo.jsx";
 
 export const OAtuhExist = () => {
 

@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../../components/common/Logo";
-import visibility from "../../assets/visibility.svg";
 import { useState } from "react";
 import { Loader } from "../../components/common/Elements";
 import api from "../../api/api.js";
@@ -104,7 +103,7 @@ export const PasswordVerification = () => {
                 setInputType(InputType === "password" ? "text" : "password")
               }
             >
-              <img className="me-4 opacity-60" src={visibility} alt="" />
+              
             </button>
           </label>
 
