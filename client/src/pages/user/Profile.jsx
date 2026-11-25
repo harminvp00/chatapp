@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 // Profile Components 
 
 import { ProfileHeader } from "../../components/user/ProfileHeader.jsx";
+import { ProfilePicture } from "../../components/user/ProfilePicture.jsx";
 
 // this is profile page of quickchat service
 export const Profile = () => {
@@ -27,9 +28,9 @@ export const Profile = () => {
   }
 
   return (
-    <div className="h-screen">
-
-      <ProfileHeader/>
+    <div className="h-screen bg-[#FFFFFF]">
+      <ProfileHeader />
+      <ProfilePicture />
     </div>
   );
 };
