@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext"
 export const ProfilePicture = () => {
     const { user } = useAuth();
     return (
-        <div className="flex flex-col items-center justify-center gap-3 py-4 border-b">
+        <div className="flex flex-col items-center justify-center gap-3 py-4 border-b sm:border-none sm:mb-5">
             <img className="w-50 h-50 rounded-full" src={user?.avatars?.image_path} alt="" />
             <h4 className="text-xl font-medium"> {user?.profile?.username} </h4>
 
