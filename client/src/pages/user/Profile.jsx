@@ -29,7 +29,7 @@ export const Profile = () => {
   return (
     <div className="w-full h-screen bg-[#FFFFFF]">
       <ProfileHeader />
-      <ProfilePicture />
+      <ProfilePicture handleLogout={handleLogout} />
       <ProfileDetails/>
     </div>
   );

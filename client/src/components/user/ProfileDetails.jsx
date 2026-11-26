@@ -3,9 +3,9 @@
 import { useAuth } from "../../context/AuthContext";
 
 export const ProfileDetails = () => {
+    
     const { user } = useAuth();
 
-    console.log(user?.profile)
     return (
         <div className="w-screen flex flex-col items-center ">
             {/* Personal Details  */}
