@@ -1,8 +1,10 @@
+import { useDashboard } from "../../context/DashboardContext";
 
 export const Friend = ({
-    username, image_path, handleOpenChat
+    username, image_path
 }) => {
 
+    const { handleOpenChat } = useDashboard();
     return (
         <li onClick={() => { handleOpenChat(username, image_path) }}
             className="border-b flex items-center gap-5 px-10 py-2 hover:cursor-pointer">

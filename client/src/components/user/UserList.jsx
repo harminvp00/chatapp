@@ -1,11 +1,11 @@
 import { useAuth } from "../../context/AuthContext"
 import { useState } from "react";
+import { useDashboard } from "../../context/DashboardContext";
 
-export const UserList = (
-    userListAfterSearch,
-) => {
+export const UserList = () => {
 
-    const { user } = useAuth()
+    const { user } = useAuth();
+    const { userListAfterSearch, handleOpenChat, createConversation, swUsername } = useDashboard();
     const [friendsIDs, _friendsIDs] = useState(user.friends.map(ele => ele.users.id));
 
     return (
@@ -14,9 +14,9 @@ export const UserList = (
             <div style={{ height: `calc(100vh - 56px)` }}
                 className='w-full flex flex-col'>   
                     <div>
-                        {userListAfterSearch.userListAfterSearch.length == 0 ?
+                        {userListAfterSearch.length == 0 ?
                             <p className='px-1 py-4 text-center'> No records are found, <br /> who contain "{swUsername}" in username </p> :
-                            <>{userListAfterSearch.userListAfterSearch.map((ele, index) => {
+                            <>{userListAfterSearch.map((ele, index) => {
 
                                 if(ele?.users?.id === user?.id){
                                     return null;

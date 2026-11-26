@@ -1,8 +1,11 @@
 
 import { ChatScreenHeader } from "./ChatScreenHeader.jsx";
 import chat_bg_image from '../../assets/chatscreen-bg.png'
+import { useDashboard } from "../../context/DashboardContext.jsx";
 
-export const ChatScreen = ({ userInChat, setUserInChat, chatOpen, setChatOpen }) => {
+export const ChatScreen = () => {
+
+    const { chatOpen } = useDashboard();
 
     return (
         <div className="flex-1 border-l">
@@ -15,7 +18,7 @@ export const ChatScreen = ({ userInChat, setUserInChat, chatOpen, setChatOpen })
                     </div>
                     :
                     <>
-                        <ChatScreenHeader setUserInChat={setUserInChat} setChatOpen={setChatOpen} picture={userInChat?.image} username={userInChat?.uname} />
+                        <ChatScreenHeader />
                         <div style={{ backgroundImage: `url(${chat_bg_image})`, height: `calc(100vh - 56px)` }} className={`w-full bg-center bg-no-repeat bg-cover`}>
                         </div>
                     </>

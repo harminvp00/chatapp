@@ -3,27 +3,12 @@
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
-export const Navbar = ({
-  setSWUsername,
-  searchUserWindow,
-  OpenSearchUsersWindow,
-  setUserListAfterSearch,
-  setEnableUserListView }) => {
-  const { user, logout } = useAuth();
+export const Navbar = () => {
+  const { user } = useAuth();
 
   const navigateTo = useNavigate();
 
-  const handleLogoutUser = async () => {
-    const wantLogout = confirm("Are you want to Logout from this device?");
-
-    if (wantLogout) {
-      await logout();
-      navigateTo("/", { replace: true });
-    }
-  };
-
-
-  return (
+   return (
     <nav className="w-full p-3 flex items-center justify-start gap-2 bg-blue-500 text-white">
 
       <span className="font-bold text-xl"> QuickChat </span>

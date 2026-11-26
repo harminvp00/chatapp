@@ -9,27 +9,17 @@ import { ProfilePicture } from "../../components/user/ProfilePicture.jsx";
 import { ProfileDetails } from "../../components/user/ProfileDetails.jsx";
 
 export const Profile = () => {
-  const { user, loading, logout } = useAuth();
-
-  const navigateTo = useNavigate();
-
+  const { loading } = useAuth();
   if (loading) {
     return <Loader message={"Loading your profile details"} />;
   }
 
-  async function handleLogout() {
-    const user_logout = confirm("Are you want to logout from this account?");
-
-    if (user_logout) {
-      await logout();
-      navigateTo("/", { replace: true });
-    }
-  }
+ 
 
   return (
     <div className="w-full h-screen bg-[#FFFFFF]">
       <ProfileHeader />
-      <ProfilePicture handleLogout={handleLogout} />
+      <ProfilePicture />
       <ProfileDetails/>
     </div>
   );

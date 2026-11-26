@@ -1,12 +1,14 @@
+import { useDashboard } from "../../context/DashboardContext";
 
 
 
-export const SearchUser = ({
-    swUsername,
-    handleSetSWUsername,
-    handleFetchUserList
-}) => {
+export const SearchUser = () => {
 
+    const { swUsername, setSWUsername, handleFetchUserList } = useDashboard();
+
+    function handleSetSWUsername(event) {
+        setSWUsername(event.target.value);
+    }
 
     return (
         <div className='w-full bg-blue-500 shadow pb-2'>

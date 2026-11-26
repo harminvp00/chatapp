@@ -1,15 +1,11 @@
 
 import { useNavigate } from 'react-router-dom';
+import { useDashboard } from '../../context/DashboardContext';
 
-export function ChatScreenHeader({ setUserInChat, setChatOpen, picture = "default_avatar.jpeg", username = "user" }) {
+export function ChatScreenHeader() {
 
-    const navigateTo = useNavigate();
-    
-    function handleChatClose() {
-        // this method is close the open chat in dashboard 
-        setChatOpen(false);
-        setUserInChat(null);
-    }
+    const navigateTo = useNavigate();     
+    const { handleChatClose, userInChat } = useDashboard();
 
     return (
         <header className='flex items-center gap-3 px-3 bg-[#f5f5f5] '>
@@ -19,8 +15,8 @@ export function ChatScreenHeader({ setUserInChat, setChatOpen, picture = "defaul
             </div>
 
             <div className="flex items-center gap-3 py-3" onClick={() => navigateTo("/profile/view") }>
-                <img className='w-8 h-8 rounded-full shadow' src={picture} alt="" />
-                <span> {username} </span>
+                <img className='w-8 h-8 rounded-full shadow' src={userInChat?.image} alt="" />
+                <span> {userInChat?.uname} </span>
             </div>
             <div className='flex-1 flex justify-end'>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#1f1f1f"><path d="M12,20q-0.82,0-1.41-0.59T10,18t0.59-1.41T12,16t1.41,0.59Q14,17.18 14,18t-0.59,1.41T12,20Zm0-6q-0.82,0-1.41-0.59T10,12t0.59-1.41T12,10t1.41,0.59Q14,11.18 14,12t-0.59,1.41T12,14Zm0-6q-0.82,0-1.41-0.59T10,6t0.59-1.41T12,4t1.41,0.59Q14,5.18 14,6T13.41,7.41T12,8Z" /></svg>

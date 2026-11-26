@@ -117,16 +117,8 @@ export const Register = () => {
 
         {/* title component  */}
         <div className="flex w-70 border-b border-black  pb-2">
+          {/* card title */}
           <Title title={"SignUp"} size={"text-2xl"} />
-          <img
-            type="button"
-            onClick={() => {
-              navigate("/");
-            }}
-            className="cursor-pointer"
-            src={close}
-            alt=""
-          />
         </div>
 
         {/* sign up form to fill details  */}
@@ -206,7 +198,7 @@ export const Register = () => {
             required
           />
 
-         
+
 
           <div className="bg-black/5 w-[90%] my-1 mx-10 p-4 border-0 outline-0 rounded-xl flex items-center">
 

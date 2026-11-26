@@ -1,8 +1,5 @@
 
-export const FindFriends = ({
-    searchUserWindow,
-    OpenSearchUsersWindow
-}) => {
+export const FindFriends = () => {
     return (
         <div className='flex flex-col items-center justify-center h-50 bg-[#f5f5f5]'>
 

@@ -2,7 +2,17 @@
 import { useAuth } from "../../context/AuthContext"
 
 export const ProfilePicture = ({ handleLogout }) => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+
+    async function handleLogout() {
+        const user_logout = confirm("Are you want to logout from this account?");
+
+        if (user_logout) {
+            await logout();
+            navigateTo("/", { replace: true });
+        }
+    }
+
     return (
         <div className="flex flex-col items-center justify-center gap-3 py-4 sm:mb-5">
             <img className="w-50 h-50 rounded-full" src={user?.avatars?.image_path} alt="" />
