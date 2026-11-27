@@ -9,16 +9,19 @@ export const UserList = () => {
     const [friendsIDs, _friendsIDs] = useState(user.friends.map(ele => ele.users.id));
 
     return (
-        <div className='w-90'>
+        <div className='w-90 relative'>
+
             {/* Container for the input and its result list of user */}
             <div style={{ height: `calc(100vh - 56px)` }}
-                className='w-full flex flex-col'>   
-                    <div>
-                        {userListAfterSearch.length == 0 ?
-                            <p className='px-1 py-4 text-center'> No records are found, <br /> who contain "{swUsername}" in username </p> :
-                            <>{userListAfterSearch.map((ele, index) => {
+                className='w-full flex flex-col'>
+                <div>
+                    {userListAfterSearch.length == 0 ?
+                        <p className='px-1 py-4 text-center'> No records are found, <br /> who contain "<b>{swUsername}</b>" in username </p> :
+                        <>
+                            <h2 className="px-5 pt-2"> search results for '<b>{swUsername}</b>' </h2>
+                            {userListAfterSearch.map((ele, index) => {
 
-                                if(ele?.users?.id === user?.id){
+                                if (ele?.users?.id === user?.id) {
                                     return null;
                                 }
                                 return (
@@ -52,9 +55,9 @@ export const UserList = () => {
                                 )
                             })
                             }
-                            </>
-                        }
-                    </div>
+                        </>
+                    }
+                </div>
             </div>
         </div>
     )

@@ -10,18 +10,19 @@ import { useDashboard } from "../../context/DashboardContext.jsx";
 export const Sidebar = () => {
     const { user } = useAuth();
 
-    const {enableUserListView } = useDashboard();
+    const { swUsername, enableUserListView } = useDashboard();
 
     return (
         <div className="w-90">
             {/* top navigation for profile, setting, notification and logout  */}
-            <Navbar/>
-            <SearchUser/>
+            <Navbar />
+            <SearchUser />
 
             {!enableUserListView ?
+
                 <div className="">
                     {user?.friends.length === 0 ?
-                        <FindFriends/> :
+                        <FindFriends /> :
                         <> {
                             user?.friends.map((ele, index) => {
                                 return (
@@ -35,7 +36,8 @@ export const Sidebar = () => {
                                 )
                             })
                         } </>}
-                </div> : <UserList />
+                </div> :
+                <UserList />
             }
         </div>
     )

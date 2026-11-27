@@ -19,7 +19,6 @@ export default function DashboardProvider({ children }) {
     const [userListAfterSearch, setUserListAfterSearch] = useState([]);
     const [enableUserListView, setEnableUserListView] = useState(false);
 
-
     async function handleFetchUserList() {
         const response = await api.get(`/chat/user/search/${swUsername}`);
         setEnableUserListView(true);
@@ -59,7 +58,6 @@ export default function DashboardProvider({ children }) {
 
     function resetStates() {
         setSWUsername("");
-        OpenSearchUsersWindow(false);
         setUserListAfterSearch([]);
         setEnableUserListView(false);
     }
@@ -67,8 +65,10 @@ export default function DashboardProvider({ children }) {
     return (
         <DashboardContext.Provider
             value={{
-                socketID, chatOpen, userInChat, swUsername, setSWUsername, userListAfterSearch, enableUserListView,
-                handleFetchUserList, connectToSocket, createConversation, handleOpenChat, handleChatClose, resetStates,
+                socketID, setSocketID, chatOpen, setChatOpen,
+                userInChat, setUserInChat, swUsername, setSWUsername,
+                userListAfterSearch, enableUserListView, handleFetchUserList, connectToSocket,
+                createConversation, handleOpenChat, handleChatClose, resetStates,
             }}>
 
             {children}

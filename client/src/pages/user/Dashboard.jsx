@@ -9,9 +9,9 @@ import { useDashboard } from "../../context/DashboardContext.jsx";
 
 export const Dashboard = () => {
 
-  const { loading, user } = useAuth();
-  const { connectToSocket } = useDashboard();
-  
+  const { loading, } = useAuth();
+  const { connectToSocket, resetStates, enableUserListView } = useDashboard();
+
   // loader condition if user not load
   if (loading) {
     return <Loader message="Please waits 2 min while we fetching details" />;
@@ -22,9 +22,15 @@ export const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex">
-        <Sidebar />
-        <ChatScreen />
+    <div
+      className="flex relative"
+      onClick={() => {
+        if (enableUserListView) {
+          resetStates();
+        }
+      }}>
+      <Sidebar />
+      <ChatScreen />
     </div>
   );
 };
