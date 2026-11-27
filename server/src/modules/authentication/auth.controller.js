@@ -1,6 +1,8 @@
 import { _env } from "../../config/env.js";
 import crypto from "node:crypto";
 import prisma from "../../config/prisma.js";
+
+import { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import {
   findSession,
   updateSessionLastUsed,
@@ -17,6 +19,7 @@ import {
 } from "../../errors/auth.error.js";
 import { OAuth2Client } from "google-auth-library";
 import { createToken } from "../../config/jwt.js";
+import { success } from "zod";
 
 // cookies options
 const cookies_options = {
@@ -97,6 +100,14 @@ export const passwordRegister = async (req, res) => {
       return;
     }
 
+    if (error.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
+    }
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -124,6 +135,7 @@ export const passowordLogin = async (req, res) => {
     // Pass validate payload, User Agent and IP Address from the request coming to the service method loginUser()
     const response = await loginUser(validate.data, rawUA, req.ip);
 
+    console.log(response)
     // if success false, that means service failed to login user or any service error is occurs
     if (!response.success) {
       res.status(400).json(response);
@@ -148,10 +160,8 @@ export const passowordLogin = async (req, res) => {
       })
       .json(rest);
   } catch (err) {
-    /**
-     * Catch Bloack Handle all the error that can cause by the service
-     */
 
+    // handle error and send response according to errors
     if (err instanceof UserError) {
       // if userError is occured
       res.status(400).json({
@@ -166,6 +176,15 @@ export const passowordLogin = async (req, res) => {
         success: false,
         message: err.message,
       });
+      return;
+    }
+
+    if (err.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
     }
 
     return res.status(400).json({
@@ -225,6 +244,14 @@ export const refresh = async (req, res) => {
       return;
     }
 
+    if (error.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
+    }
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -257,6 +284,15 @@ export const fetchUser = async (req, res) => {
       });
       return;
     }
+
+    if (error.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
+    }
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -265,11 +301,30 @@ export const fetchUser = async (req, res) => {
 };
 
 export const getAvatar = async (req, res) => {
-  const avatar_name = req.params.avatar_name;
+  try {
+    const avatar_name = req.params.avatar_name;
+    return res.sendFile(
+      `/home/harmin/Desktop/web3_projects/QuickChat/server/storage/avatar/${avatar_name}`,
+    );
+  } catch (error) {
 
-  res.sendFile(
-    `/home/harmin/Desktop/web3_projects/QuickChat/server/storage/avatar/${avatar_name}`,
-  );
+    if (error instanceof UnauthorizedAccess) {
+      res.status(401).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+
+    if (error.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
+    }
+  }
+
 };
 
 export const logout = async (req, res) => {
@@ -307,6 +362,23 @@ export const logout = async (req, res) => {
         message: "logout successfully",
       });
   } catch (err) {
+
+    if (err.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
+      });
+      return;
+    }
+
+    if (err instanceof UnauthorizedAccess) {
+      res.status(401).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+
     return res.status(400).json({
       status: false,
       message: err.message,
@@ -396,6 +468,14 @@ export const googleCallback = async (req, res) => {
       res.status(404).json({
         success: false,
         message: err.message,
+      });
+      return;
+    }
+
+    if (err.name === 'PrismaClientInitializationError') {
+      res.status(400).json({
+        success: false,
+        message: 'Server is not responding, Try later!'
       });
       return;
     }
