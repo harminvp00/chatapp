@@ -1,13 +1,17 @@
 
 
 import { Router } from "express";
-import authRouter from "../modules/authentication/auth.routes.js";
-import chatRouter from "../modules/chat/chat.route.js"
 const router = Router();
 
-/* authentication routes */
-router.use("/auth", authRouter);
-router.use('/chat', chatRouter)
+// routes from diffrent modules 
+import authRouter from "../modules/authentication/auth.routes.js";
+import chatRouter from "../modules/chat/chat.route.js"
+import profileRouter from "../modules/profile/profile.route.js";
 
-// exporting all the routes
+// define routes 
+router
+    .use("/auth", authRouter)
+    .use('/chat', chatRouter)
+    .use('/profile', profileRouter)
+
 export default router;
